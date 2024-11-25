@@ -20,4 +20,4 @@ Au cours des deux semaines de prises en main, nous avons effectué:
 Hors mis le volet solaire, il a été établi vu les besoins en énergie des autres modules que la battérie centrale devra pour renvoyer en sortie 12V. Cette énergie sera envoyée au module de contrôle des roues qui à son tour enverra de l'énergie à la carte de contrôle (Arduino pour les tests) qui à son tour alimentera les autres modules (Rasberry pi, ESP32-CAM). 
 
 ## Difficultés rencontrées
-Nous avons rencontrés des difficultés pour le téleversement des codes sur l'ESP32-CAM. Ce problème a été résolu mais la réussite du processus de téléversement d'un code sur ce matériel reste aléatoire.
+Nous avons rencontré des difficultés pour le téleversement des codes sur l'ESP32-CAM. Ce problème a été résolu mais la réussite du processus de téléversement d'un code sur ce matériel reste aléatoire.
