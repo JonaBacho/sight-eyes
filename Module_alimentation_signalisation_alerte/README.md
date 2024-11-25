@@ -16,7 +16,7 @@ Au cours des deux semaines de prises en main, nous avons effectué:
 -   **La réalisation d'un montage de contrôle de buzzer à partir d'un signal entrant** : Ce montage comprend une fonction qui pourra être déclenchée par les autres modules pour la signalisation;
 -   **La coordination de la signalisation visuelle à la signalisation sonore**;
 -   **La connexion de l'ESP32-CAM à un WiFi distant**: Cette partie à été effectuée pour pouvoir communiquer via Internet avec l'ESP32-CAM avec le module application.
--   **Le plan d'alimentation du robot**: L'alimentation source est une batterie. Néanmoins, il avait été prévu que cette batterie soit rechargeable par énergie solaire. Néanmoins nous n'avons pas encore effectué de tests physiques sur ce volet. Mais nous savons que nous aurons besoin d'**une plaque solaire**, d'un **adaptateur de tension**, d'un **circuit de charge (Powerboost 100)** et d'une **batterie rechargeable**.
+-   **Le plan d'alimentation du robot**: L'alimentation source est une batterie. Néanmoins, il avait été prévu que cette batterie soit rechargeable par énergie solaire. Néanmoins nous n'avons pas encore effectué de tests physiques sur ce volet. Mais nous savons que nous aurons besoin d'**une plaque solaire**, d'un **adaptateur de tension**, d'un **circuit de charge (Powerboost 1000)** et d'une **batterie rechargeable**.
 Hors mis le volet solaire, il a été établi vu les besoins en énergie des autres modules que la battérie centrale devra pour renvoyer en sortie 12V. Cette énergie sera envoyée au module de contrôle des roues qui à son tour enverra de l'énergie à la carte de contrôle (Arduino pour les tests) qui à son tour alimentera les autres modules (Rasberry pi, ESP32-CAM). 
 
 ## Difficultés rencontrées
