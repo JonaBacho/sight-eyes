@@ -1,5 +1,5 @@
 
-# Projet d'Électronique et d'Interfaçage : `SIGH EYES`
+# Projet d'Électronique et d'Interfaçage : `SIGHT EYES`
 
 ![Bannière du projet](media/images/banner.jpeg)  
 *Maquette du projet*  
