@@ -1,0 +1,45 @@
+/* Style pour l'image personnelle dans le cadre */
+.image-frame {
+    width: 300px;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    text-align: center;
+    margin: 10px;
+    background-color: #f9f9f9;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.image-frame img {
+    width: 100%;
+    height: auto;
+    border-radius: 5px;
+    max-height: 200px;
+}
+
+.image-frame h3 {
+    font-size: 16px;
+    margin-top: 10px;
+    color: #333;
+}
+
+.image-frame button {
+    margin-top: 15px;
+    padding: 8px 16px;
+    font-size: 14px;
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.image-frame button:hover {
+    background-color: #0056b3;
+}
+
+.image-frame button:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+}

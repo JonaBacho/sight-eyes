@@ -1,0 +1,29 @@
+/* ImageList.css */
+li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: white;
+    margin-bottom: 15px;
+    padding: 15px;
+    border-radius: 10px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s ease;
+}
+
+li:hover {
+    transform: scale(1.03);
+}
+
+/* Rectangle pour afficher les images */
+img {
+    width: 150px;  /* Largeur de l'image dans le rectangle */
+    height: 100px; /* Hauteur de l'image dans le rectangle */
+    object-fit: cover; /* L'image s'ajuste pour couvrir le rectangle sans déformation */
+    border-radius: 5px; /* Coins arrondis pour les images */
+}
+
+/* Si vous voulez un espacement entre les images et leurs noms */
+li .image-name {
+    display: none; /* Masque les noms des images */
+}
