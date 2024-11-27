@@ -1,7 +1,3 @@
-Voici le fichier `README.md` mis à jour pour correspondre à l'arborescence fournie :
-
----
-
 # Projet de gestion d'images avec interface Web et bot Telegram
 
 ## Description
@@ -19,16 +15,16 @@ L'application Web et le bot Telegram sont synchronisés avec une base de donnée
 
 ```
 - db/
-  - database.sql        # Script SQL pour créer et initialiser la base de données
+  - database.sql        
 - gifs/
-  - web.gif             # Vidéo tutoriel pour l'application Web
-  - bot.gif             # Vidéo tutoriel pour le bot Telegram
+  - web.gif             
+  - bot.gif             
 - Telegram/
-  - bot.py              # Code source du bot Telegram
-  - database.sql        # Script SQL spécifique au bot
+  - bot.py              
+  - database.sql        
 - Web/
-  - backend/            # Code backend (Node.js, Express, etc.)
-  - frontend/           # Code frontend (React, CSS, etc.)
+  - backend/            
+  - frontend/           
 ```
 
 ---
@@ -127,7 +123,3 @@ Les contributions sont les bienvenues ! Merci de soumettre des PR ou d'ouvrir de
 
 ## Licence
 Ce projet est sous licence MIT. Consultez le fichier [LICENSE](LICENSE) pour plus d'informations.
-
---- 
-
-Avec cette structure, tes GIFs seront intégrés, et les instructions s'aligneront avec l'arborescence de ton projet. 🚀
