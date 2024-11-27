@@ -5,7 +5,7 @@
 *Maquette du projet*  
 
 <a href="media/videos/mouvements_chassis.mp4">
-  <img src="media/images/click_to_see_demo2.webp" alt="Démonstration Vidéo" width="100" height="100">
+  <img src="media/images/click_to_see_demo2.webp" alt="Démonstration Vidéo" width="150" height="150">
 </a>
 <p><em>Cliquez sur l'image pour voir la vidéo de démonstration</em></p>
 
