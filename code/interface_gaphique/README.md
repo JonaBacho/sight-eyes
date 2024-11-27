@@ -113,3 +113,7 @@ L'application Web et le bot Telegram sont synchronisés avec une base de donnée
 - Deux endpoints supplémentaires doivent être définis :
   - **/pause** : pour mettre le robot en pause.
   - **/cancel** : pour annuler l'opération en cours.
+
+---
+
+## Pour plus d'informations sur le projet ![README PRINCIPAL](../../README.md)
