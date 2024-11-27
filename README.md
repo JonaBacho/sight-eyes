@@ -4,8 +4,11 @@
 ![Bannière du projet](media/images/banner.jpeg)  
 *Maquette du projet*  
 
-[![Démonstration Vidéo](media/images/click_to_see_demo.webp)](media/videos/mouvements_chassis.mp4)  
-*Cliquez sur l'image pour voir la vidéo de démonstration*  
+<a href="media/videos/mouvements_chassis.mp4">
+  <img src="media/images/click_to_see_demo2.webp" alt="Démonstration Vidéo" width="100" height="100">
+</a>
+<p><em>Cliquez sur l'image pour voir la vidéo de démonstration</em></p>
+
 
 ---
 
