@@ -17,9 +17,11 @@
 2. [Structure du Projet](#structure-du-projet)  
 3. [Matériel et Composants Utilisés](#matériel-et-composants-utilisés)  
 4. [Modules et Fonctionnalités](#modules-et-fonctionnalités)  
-   - [Module 1 : Acquisition de données](#module-1--acquisition-de-données)  
-   - [Module 2 : Traitement des signaux](#module-2--traitement-des-signaux)  
-   - [Module 3 : Interface utilisateur](#module-3--interface-utilisateur)  
+   - [Module 1 : Alimentation et signalisation](#module-1--alimentation-et-signalisation)  
+   - [Module 2 : Montage du chassis](#module-2--montage-du-chassis)  
+   - [Module 3 : Analyse d'images](#module-3--analyse-dimages)
+
+    - [Module 4 : Interface utilisateur](#module-4--interfaces-utilisateur)  
 5.  [Déploiement et Utilisation](#déploiement-et-utilisation)  
 6. [Problèmes Connus et Résolution](#problèmes-connus-et-résolution)  
 7. [Contribution](#contribution)  
@@ -99,7 +101,7 @@ Le projet est structuré comme suit :
 - **Points importants** : utilise le `Rasbery-py` surlequel tourne notre algorithme
 - 📁 [Lien vers le module](./src/module1_acquisition.md) 
 
-#### Module 1 : Interfaces utilisateur
+#### Module 4 : Interfaces utilisateur
 - **Description** : C'est a partir d'ici qu'on permet a l'utilisateur d'interagir avec son robot
 - **Points importants** : il le fait a partir d'une application web
 - 📁 [Lien vers le module](./src/module1_acquisition.md)  
