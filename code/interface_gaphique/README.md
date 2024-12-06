@@ -15,13 +15,9 @@ L'application Web et le bot Telegram sont synchronisés avec une base de donnée
 
 ```
 - db/
-  - database.sql        
-- gifs/
-  - web.gif             
-  - bot.gif             
+  - database.sql
 - Telegram/
-  - bot.py              
-  - database.sql        
+  - bot.py                  
 - Web/
   - backend/            
   - frontend/           

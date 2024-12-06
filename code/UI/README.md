@@ -4,10 +4,9 @@
 
 Ce projet combine une application Web et un bot Telegram permettant :
 - Le téléchargement et la gestion d'images.
-- L'envoi d'images sélectionnées à un robot ESP32-CAM.
-- L'interaction avec le robot via des signaux comme *pause* ou *cancel*.
+- L'interaction avec un robot via des signaux comme *start*, *pause*, *cancel*, *bip*, et *resume*.
 
-L'application Web et le bot Telegram sont synchronisés avec une base de données MySQL pour stocker et gérer les images.
+L'application Web et le bot Telegram sont synchronisés avec une base de données MySQL nommée **ImageDB** pour stocker et gérer les images.
 
 ---
 
@@ -16,12 +15,13 @@ L'application Web et le bot Telegram sont synchronisés avec une base de donnée
 ```
 - db/
   - database.sql        
-- gifs/
-  - web.gif             
-  - bot.gif             
+- execution-daemon/
+  - config.sh
+  - start_daemon.py   
+- signal-handler/
+  - handler.py        
 - Telegram/
-  - bot.py              
-  - database.sql        
+  - bot.py                    
 - Web/
   - backend/            
   - frontend/           
@@ -34,12 +34,17 @@ L'application Web et le bot Telegram sont synchronisés avec une base de donnée
 ### Bot Telegram
 - **Upload d'images** : permet d'envoyer des images au bot pour les stocker dans la base de données.
 - **Recherche d'images** : affiche une liste d'images disponibles avec leurs dates d'enregistrement.
-- **Sélection d'image** : transfert une image choisie au robot ESP32-CAM.
-- **Signaux au robot** : commande pour annuler ou mettre en pause les actions du robot.
+- **Sélection d'image** : transfert une image choisie pour une gestion ou un traitement ultérieur.
+- **Signaux au robot** : permet d'envoyer des commandes au robot, incluant :
+  - **start** : démarre une tâche ou une opération du robot.
+  - **pause** : met en pause l'opération du robot en cours.
+  - **cancel** : annule l'opération en cours.
+  - **bip** : envoie un signal au robot pour qu'il émette un bip sonore.
+  - **resume** : reprend l'opération en pause.
 
 ### Application Web
 - **Interface utilisateur moderne et responsive** en ReactJS.
-- **Gestion complète des images** : upload, visualisation, transfert au robot.
+- **Gestion complète des images** : upload, visualisation, et traitement des images.
 - **Base de données commune avec le bot Telegram.**
 
 ---
@@ -56,64 +61,123 @@ L'application Web et le bot Telegram sont synchronisés avec une base de donnée
 
 ## Prérequis
 
-1. **Technologies requises** :
-   - Python 3.x
-   - Node.js et npm
-   - MySQL
-   - ESP32-CAM avec microprogramme configuré
+Avant de commencer, assurez-vous que votre Raspberry Pi est prêt pour le déploiement du projet. Voici les étapes pour installer et configurer l'environnement nécessaire.
 
-2. **Bibliothèques Python** :
-   ```bash
-   pip install telebot mysql-connector-python requests
-   ```
-
-3. **Modules Node.js** :
-   - Express, Sequelize, body-parser, et autres nécessaires (voir `package.json` dans `Web/backend/`).
+### 1. Installer le système d'exploitation sur le Raspberry Pi
+- Téléchargez et installez [Raspberry Pi OS](https://www.raspberrypi.org/software/) sur votre Raspberry Pi. Vous pouvez utiliser [Raspberry Pi Imager](https://www.raspberrypi.org/software/) pour une installation rapide sur une carte SD.
 
 ---
 
-## Installation
+## Déploiement du projet sur Raspberry Pi
 
-### Étape 1 : Configurer la base de données
-1. Créez une base de données MySQL et importez le fichier SQL situé dans `db/database.sql`.
+### Étape 1 : Configurer le Raspberry Pi
 
-   Exemple :
+1. **Mettre à jour le Raspberry Pi** :
+   Ouvrez un terminal et exécutez les commandes suivantes pour mettre à jour votre Raspberry Pi :
    ```bash
-   mysql -u root -p < db/database.sql
+   sudo apt update
+   sudo apt upgrade -y
    ```
 
-2. Mettez à jour les fichiers `bot.py` et le backend avec vos informations de connexion MySQL.
+2. **Installer Python 3 et pip** :
+   Le bot Telegram utilise Python, vous devez donc installer Python 3 et son gestionnaire de paquets `pip` :
+   ```bash
+   sudo apt install python3 python3-pip -y
+   ```
+
+3. **Installer Node.js et npm** :
+   Le backend utilise Node.js, donc installez Node.js et npm :
+   ```bash
+   curl -sL https://deb.nodesource.com/setup_16.x | sudo -E bash -
+   sudo apt install -y nodejs
+   ```
+
+4. **Installer MySQL** :
+   Le projet utilise MySQL pour la gestion de la base de données. Nous n'utiliserons pas de mot de passe pour la connexion :
+   ```bash
+   sudo apt install mysql-server -y
+   sudo systemctl start mysql
+   sudo systemctl enable mysql
+   ```
+
+   Après l'installation, vous pouvez vous connecter à MySQL sans mot de passe en utilisant :
+   ```bash
+   sudo mysql
+   ```
+
+   Assurez-vous qu'il n'y a pas de mot de passe défini pour l'utilisateur root en exécutant la commande suivante dans MySQL :
+   ```sql
+   ALTER USER 'root'@'localhost' IDENTIFIED BY '';
+   ```
+
+5. **Installer d'autres dépendances pour le projet** :
+   Installez les bibliothèques Python nécessaires pour le bot Telegram :
+   ```bash
+   pip3 install telebot mysql-connector-python requests
+   ```
 
 ---
 
-### Étape 2 : Lancer le bot Telegram
-1. Rendez-vous dans le dossier `Telegram/`.
-2. Configurez le fichier `bot.py` avec votre token Telegram et l'adresse IP de l'ESP32-CAM.
-3. Lancez le bot :
+### Étape 2 : Configurer la base de données
+
+1. **Créer une base de données MySQL** :
+   Connectez-vous à MySQL et créez une nouvelle base de données pour le projet :
    ```bash
-   python bot.py
+   mysql -u root
+   CREATE DATABASE ImageDB;
+   EXIT;
+   ```
+
+2. **Importer le schéma de la base de données** :
+   Importez le fichier `database.sql` dans votre base de données :
+   ```bash
+   mysql -u root ImageDB < db/database.sql
+   ```
+
+3. **Mettre à jour les informations de connexion** :
+   Mettez à jour les fichiers `bot.py` et le backend avec vos informations de connexion MySQL (nom de la base de données, utilisateur, mot de passe).
+
+---
+
+### Étape 3 : Déployer le bot Telegram
+
+1. **Rendez-vous dans le dossier `Telegram/`** :
+   Allez dans le répertoire du bot Telegram et configurez-le en modifiant le fichier `bot.py` avec votre token Telegram et les informations de la base de données.
+
+2. **Lancez le bot** :
+   Exécutez le bot Telegram avec la commande suivante :
+   ```bash
+   python3 bot.py
    ```
 
 ---
 
-### Étape 3 : Lancer l'application Web
-1. Allez dans le dossier `Web/backend` et démarrez le serveur backend :
+### Étape 4 : Déployer l'application Web
+
+1. **Lancer le backend** :
+   Allez dans le dossier `Web/backend` et démarrez le serveur backend avec la commande :
    ```bash
    node server.js
    ```
-2. Dans un autre terminal, naviguez vers `Web/frontend` et démarrez le serveur frontend :
+
+2. **Lancer le frontend** :
+   Dans un autre terminal, allez dans le dossier `Web/frontend` et lancez le serveur frontend avec la commande :
    ```bash
    npm start
    ```
 
 ---
 
-## Fonctionnement du robot ESP32-CAM
-- L'ESP32-CAM doit être configuré pour écouter sur `http://192.168.24.77/` et accepter des requêtes POST pour le transfert d'images.
-- Deux endpoints supplémentaires doivent être définis :
-  - **/pause** : pour mettre le robot en pause.
-  - **/cancel** : pour annuler l'opération en cours.
+## Fonctionnement des signaux
+
+Voici une explication détaillée de chaque signal que vous pouvez envoyer via le bot Telegram pour interagir avec le robot :
+
+- **start** : Lance une nouvelle opération ou tâche dans le robot. Cela peut inclure des tâches de traitement d'image, de mouvement ou d'autres actions configurées.
+- **pause** : Met en pause l'opération en cours. Utile pour suspendre une tâche avant qu'elle ne soit terminée.
+- **cancel** : Annule l'opération en cours, interrompant tout traitement ou mouvement.
+- **bip** : Envoie un signal au robot pour qu'il émette un bip sonore, utile pour signaler un événement ou une étape.
+- **resume** : Reprend une opération en pause, permettant de continuer là où elle s'était arrêtée.
 
 ---
 
-## Pour plus d'informations sur le projet ![README PRINCIPAL](../../README.md)
+## Pour plus d'informations sur le projet, consultez le [README principal](../../README.md).
