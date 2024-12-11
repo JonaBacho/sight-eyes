@@ -13,7 +13,7 @@ bot = telebot.TeleBot(TOKEN)
 # Lire le PID du programme principal depuis le fichier
 def get_program_pid():
     try:
-        with open("program_pid.txt", "r") as pid_file:
+        with open("../signal-handler/program_pid.txt", "r") as pid_file:
             pid = int(pid_file.read().strip())
         return pid
     except FileNotFoundError:
@@ -23,7 +23,7 @@ def get_program_pid():
         print("❌ Le contenu de program_pid.txt n'est pas un PID valide.")
         return None
 
-PROGRAM_PID = get_program_pid()  # Récupère le PID à partir du fichier
+PROGRAM_PID = get_program_pid()
 
 # Connexion à la base de données
 def create_connection():
@@ -61,30 +61,51 @@ def send_welcome(message: Message):
 @bot.message_handler(commands=['upload'])
 def upload_image(message: Message):
     bot.send_message(message.chat.id, "📸 Veuillez envoyer une image à enregistrer.")
-
+    
     @bot.message_handler(content_types=['photo'])
     def handle_image(received_message: Message):
+        file_info = bot.get_file(received_message.photo[-1].file_id)
+        file = requests.get(f'https://api.telegram.org/file/bot{TOKEN}/{file_info.file_path}')
+
         connection = create_connection()
         if connection is None:
             bot.send_message(received_message.chat.id, "❌ Erreur de connexion à la base de données.")
             return
 
-        cursor = connection.cursor()
-        file_info = bot.get_file(received_message.photo[-1].file_id)
-        file = requests.get(f'https://api.telegram.org/file/bot{TOKEN}/{file_info.file_path}')
+        # Demander un mot-clé pour l'image
+        bot.send_message(received_message.chat.id, "🔑 Veuillez envoyer un mot-clé pour cette image.")
+        
+        @bot.message_handler(content_types=['text'])
+        def handle_keyword(keyword_message: Message):
+            keyword = keyword_message.text.strip()
+            if not keyword:
+                bot.send_message(keyword_message.chat.id, "❌ Le mot-clé ne peut pas être vide.")
+                return
 
-        image_name = f"{received_message.photo[-1].file_id}.jpg"
-        image_data = file.content
+            cursor = connection.cursor()
+            try:
+                # Enregistrer l'image dans le dossier "image"
+                image_id = None
+                cursor.execute("INSERT INTO image (image_url, keyword) VALUES (%s, %s)", ("", keyword))
+                connection.commit()
+                image_id = cursor.lastrowid
+                
+                image_name = f"{image_id}.jpg"
+                image_path = f"../image/{image_name}"
+                with open(image_path, 'wb') as img_file:
+                    img_file.write(file.content)
 
-        try:
-            cursor.execute("INSERT INTO images (image_name, image_data) VALUES (%s, %s)", (image_name, image_data))
-            connection.commit()
-            bot.send_message(received_message.chat.id, "✅ Image enregistrée avec succès !")
-        except Error as e:
-            bot.send_message(received_message.chat.id, f"❌ Erreur lors de l'enregistrement : {e}")
-        finally:
-            cursor.close()
-            connection.close()
+                # Mettre à jour la colonne image_url
+                relative_path = f"image/{image_name}"  # Chemin relatif depuis le dossier Telegram
+                cursor.execute("UPDATE image SET image_url = %s WHERE id = %s", (relative_path, image_id))
+                connection.commit()
+
+                bot.send_message(keyword_message.chat.id, f"✅ Image enregistrée avec succès !\nChemin : {relative_path}\nMot-clé : {keyword}")
+            except Error as e:
+                bot.send_message(keyword_message.chat.id, f"❌ Erreur lors de l'enregistrement : {e}")
+            finally:
+                cursor.close()
+                connection.close()
 
 # Commande /search
 @bot.message_handler(commands=['search'])
@@ -96,14 +117,31 @@ def list_images(message: Message):
 
     try:
         cursor = connection.cursor()
-        cursor.execute("SELECT id, date_uploaded FROM images")
+        cursor.execute("SELECT id, image_url, keyword, date_uploaded FROM image")
         results = cursor.fetchall()
 
         if results:
             bot.send_message(message.chat.id, "🔍 Images disponibles :")
             for row in results:
-                bot.send_message(message.chat.id, f"ID: {row[0]} | Date: {row[1]}")  # Afficher les images
-            bot.send_message(message.chat.id, "✏️ Répondez avec l'ID de l'image pour l'utiliser.")
+                image_id = row[0]
+                image_url = row[1]
+                keyword = row[2]
+                date_uploaded = row[3]
+                
+                image_path = os.path.join("..", image_url)  # Construire le chemin complet
+                
+                if os.path.exists(image_path):
+                    with open(image_path, 'rb') as img_file:
+                        bot.send_photo(
+                            message.chat.id,
+                            img_file,
+                            caption=f"ID: {image_id}\nMot-clé: {keyword}\nDate: {date_uploaded}"
+                        )
+                else:
+                    bot.send_message(
+                        message.chat.id,
+                        f"⚠️ Image non trouvée sur le serveur.\nID: {image_id} | Mot-clé: {keyword} | Date: {date_uploaded}"
+                    )
         else:
             bot.send_message(message.chat.id, "⚠️ Aucune image disponible.")
     except Error as e:
@@ -111,6 +149,9 @@ def list_images(message: Message):
     finally:
         cursor.close()
         connection.close()
+
+# Signaux inchangés...
+# Commande pause, resume, cancel, bip
 
 # Gestion des signaux locaux
 def send_signal_to_program(signal_type: int, message: Message, success_msg: str):
@@ -144,6 +185,8 @@ def cancel_signal(message: Message):
 def bip_signal(message: Message):
     send_signal_to_program(signal_type=signal.SIGUSR1, message=message, success_msg="🔔 Signal de bip envoyé.")
 
+
 # Lancement du bot
 if __name__ == "__main__":
     bot.polling()
+
