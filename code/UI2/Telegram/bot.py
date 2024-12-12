@@ -18,6 +18,8 @@ active_image = {
     'date_uploaded': None
 }
 
+filey = None
+
 # Variable pour suivre l'état de l'utilisateur (en attente de sélection d'un ID)
 user_state = {}
 
@@ -75,9 +77,11 @@ def upload_image(message: Message):
     
     @bot.message_handler(content_types=['photo'])
     def handle_image(received_message: Message):
+        global filey
         file_info = bot.get_file(received_message.photo[-1].file_id)
         file = requests.get(f'https://api.telegram.org/file/bot{TOKEN}/{file_info.file_path}')
-
+        filey = file.content
+        
         connection = create_connection()
         if connection is None:
             bot.send_message(received_message.chat.id, "❌ Erreur de connexion à la base de données.")
@@ -160,6 +164,7 @@ def send_signal_to_program(signal_type: int, message: Message, success_msg: str)
 
 @bot.message_handler(content_types=['text'])
 def handle_keyword(keyword_message: Message):
+    global filey
     if user_state.get(keyword_message.chat.id, {}).get('waiting_for_key'):
         keyword = keyword_message.text.strip()
         connection = create_connection()
@@ -175,10 +180,11 @@ def handle_keyword(keyword_message: Message):
             connection.commit()
             image_id = cursor.lastrowid
             
+            
             image_name = f"{image_id}.jpg"
             image_path = f"../image/{image_name}"
             with open(image_path, 'wb') as img_file:
-                img_file.write(file.content)
+                img_file.write(filey)
 
             # Mettre à jour la colonne image_url
             relative_path = f"image/{image_name}"  # Chemin relatif depuis le dossier Telegram
