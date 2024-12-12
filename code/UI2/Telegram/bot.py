@@ -86,40 +86,7 @@ def upload_image(message: Message):
         # Demander un mot-clé pour l'image
         bot.send_message(received_message.chat.id, "🔑 Veuillez envoyer un mot-clé pour cette image.")
         user_state[received_message.chat.id] = {'waiting_for_key': True}
-        
-        @bot.message_handler(content_types=['text'])
-        def handle_keyword(keyword_message: Message):
-            if user_state.get(keyword_message.chat.id, {}).get('waiting_for_key'):
-                keyword = keyword_message.text.strip()
-                if not keyword:
-                    bot.send_message(keyword_message.chat.id, "❌ Le mot-clé ne peut pas être vide.")
-                    return
 
-                cursor = connection.cursor()
-                try:
-                    # Enregistrer l'image dans le dossier "image"
-                    image_id = None
-                    cursor.execute("INSERT INTO image (image_url, keyword) VALUES (%s, %s)", ("", keyword))
-                    connection.commit()
-                    image_id = cursor.lastrowid
-                
-                    image_name = f"{image_id}.jpg"
-                    image_path = f"../image/{image_name}"
-                    with open(image_path, 'wb') as img_file:
-                        img_file.write(file.content)
-
-                    # Mettre à jour la colonne image_url
-                    relative_path = f"image/{image_name}"  # Chemin relatif depuis le dossier Telegram
-                    cursor.execute("UPDATE image SET image_url = %s WHERE id = %s", (relative_path, image_id))
-                    connection.commit()
-
-                    bot.send_message(keyword_message.chat.id, f"✅ Image enregistrée avec succès !\nChemin : {relative_path}\nMot-clé : {keyword}")
-                    user_state[message.chat.id] = {'waiting_for_key': False}
-                except Error as e:
-                    bot.send_message(keyword_message.chat.id, f"❌ Erreur lors de l'enregistrement : {e}")
-                finally:
-                    cursor.close()
-                    connection.close()
 
 # Commande /search
 @bot.message_handler(commands=['search'])
@@ -163,46 +130,7 @@ def list_images(message: Message):
             # Demander à l'utilisateur de choisir un ID
             bot.send_message(message.chat.id, "Veuillez choisir un ID d'image en répondant avec l'ID correspondant.")
             user_state[message.chat.id] = {'waiting_for_id': True}
-
-            @bot.message_handler(content_types=['text'])
-            def handle_image_id_selection(id_message: Message):
-                if user_state.get(id_message.chat.id, {}).get('waiting_for_id'):
-                    selected_id = id_message.text.strip()
-
-                    try:
-                        selected_id = int(selected_id)
-                    except ValueError:
-                        bot.send_message(id_message.chat.id, "❌ Veuillez entrer un ID valide.")
-                        return
-
-                    # Vérifier si l'ID existe parmi les résultats de la recherche
-                    selected_image = None
-                    for row in results:
-                        if row[0] == selected_id:
-                            selected_image = row
-                            break
-
-                    if selected_image:
-                        # Stocker les informations de l'image dans la variable d'état
-                        active_image = {
-                            'id': selected_image[0],
-                            'keyword': selected_image[2],
-                            'url': selected_image[1],
-                            'date_uploaded': selected_image[3]
-                        }
-
-                        image_path = os.path.join("..", active_image['url'])  # Construire le chemin complet
-                        
-                        if os.path.exists(image_path):
-                            with open(image_path, 'rb') as img_file:
-                                bot.send_photo(
-                                    id_message.chat.id,
-                                    img_file,
-                                    caption=f"✅ Image sélectionnée !\nID: {active_image['id']}\nMot-clé: {active_image['keyword']}\nDate: {active_image['date_uploaded']}"
-                                )
-                        user_state[id_message.chat.id]['waiting_for_id'] = False  # Désactiver l'attente d'ID
-                    else:
-                        bot.send_message(id_message.chat.id, "❌ Aucune image trouvée avec cet ID.")
+            
         else:
             bot.send_message(message.chat.id, "⚠️ Aucune image disponible.")
     except Error as e:
@@ -229,6 +157,81 @@ def send_signal_to_program(signal_type: int, message: Message, success_msg: str)
         bot.send_message(message.chat.id, "❌ Permissions insuffisantes pour envoyer le signal.")
     except Exception as e:
         bot.send_message(message.chat.id, f"❌ Erreur : {e}")
+
+@bot.message_handler(content_types=['text'])
+def handle_keyword(keyword_message: Message):
+    if user_state.get(keyword_message.chat.id, {}).get('waiting_for_key'):
+        keyword = keyword_message.text.strip()
+        connection = create_connection()
+        if not keyword:
+            bot.send_message(keyword_message.chat.id, "❌ Le mot-clé ne peut pas être vide.")
+            return
+
+        cursor = connection.cursor()
+        try:
+            # Enregistrer l'image dans le dossier "image"
+            image_id = None
+            cursor.execute("INSERT INTO image (image_url, keyword) VALUES (%s, %s)", ("", keyword))
+            connection.commit()
+            image_id = cursor.lastrowid
+            
+            image_name = f"{image_id}.jpg"
+            image_path = f"../image/{image_name}"
+            with open(image_path, 'wb') as img_file:
+                img_file.write(file.content)
+
+            # Mettre à jour la colonne image_url
+            relative_path = f"image/{image_name}"  # Chemin relatif depuis le dossier Telegram
+            cursor.execute("UPDATE image SET image_url = %s WHERE id = %s", (relative_path, image_id))
+            connection.commit()
+
+            bot.send_message(
+                keyword_message.chat.id,
+                f"✅ Image enregistrée avec succès !\nChemin : {relative_path}\nMot-clé : {keyword}"
+            )
+            user_state[keyword_message.chat.id] = {'waiting_for_key': False}
+        except Error as e:
+            bot.send_message(keyword_message.chat.id, f"❌ Erreur lors de l'enregistrement : {e}")
+        finally:
+            cursor.close()
+            connection.close()
+
+    id_message = keyword_message
+    if user_state.get(id_message.chat.id, {}).get('waiting_for_id'):
+        selected_id = id_message.text.strip()
+        connection = create_connection()
+        cursor = connection.cursor()
+
+        try:
+            selected_id = int(selected_id)
+        except ValueError:
+            bot.send_message(id_message.chat.id, "❌ Veuillez entrer un ID valide.")
+            return
+
+        # Vérifier si l'ID existe parmi les résultats de la recherche
+        cursor.execute("SELECT id, image_url, keyword, date_uploaded FROM image WHERE id = %s", (selected_id,))
+        selected_image = cursor.fetchone()
+
+        if selected_image:
+            # Stocker les informations de l'image dans la variable globale
+            active_image['id'] = selected_image[0]
+            active_image['keyword'] = selected_image[2]
+            active_image['url'] = selected_image[1]
+            active_image['date_uploaded'] = selected_image[3]
+
+            image_path = os.path.join("..", active_image['url'])  # Construire le chemin complet
+            
+            if os.path.exists(image_path):
+                with open(image_path, 'rb') as img_file:
+                    bot.send_photo(
+                        id_message.chat.id,
+                        img_file,
+                        caption=f"✅ Image sélectionnée !\nID: {active_image['id']}\nMot-clé: {active_image['keyword']}\nDate: {active_image['date_uploaded']}"
+                    )
+                user_state[id_message.chat.id]['waiting_for_id'] = False  # Désactiver l'attente d'ID
+        else:
+            bot.send_message(id_message.chat.id, "❌ Aucune image trouvée avec cet ID.")
+
 
 @bot.message_handler(commands=['pause'])
 def pause_signal(message: Message):
