@@ -13,7 +13,7 @@ bot = telebot.TeleBot(TOKEN)
 # Lire le PID du programme principal depuis le fichier
 def get_program_pid():
     try:
-        with open("program_pid.txt", "r") as pid_file:
+        with open("../signal-handler/program_pid.txt", "r") as pid_file:
             pid = int(pid_file.read().strip())
         return pid
     except FileNotFoundError:

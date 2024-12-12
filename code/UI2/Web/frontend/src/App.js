@@ -13,19 +13,8 @@ const App = () => {
     if (currentView === "images") {
       axios
         .get("http://localhost:5000/images")
-        .then(async (response) => {
-          const imagePreviews = await Promise.all(
-            response.data.map(async (image) => {
-              const fullImageResponse = await axios.get(
-                `http://localhost:5000/image/${image.id}`
-              );
-              return {
-                ...image,
-                image_data: fullImageResponse.data.image_data,
-              };
-            })
-          );
-          setImages(imagePreviews);
+        .then((response) => {
+          setImages(response.data); // Directement utiliser les données renvoyées
         })
         .catch((error) => {
           console.error("Erreur lors du chargement des images :", error);
@@ -59,6 +48,12 @@ const App = () => {
       });
   };
 
+  // Fonction pour afficher une image en taille réelle
+  const handleViewImage = (imageId) => {
+    const image = images.find((img) => img.id === imageId);
+    setSelectedImage(image);
+  };
+
   return (
     <div className="App">
       {currentView === "menu" && (
@@ -78,10 +73,7 @@ const App = () => {
 
       {currentView === "images" && (
         <div>
-          <button
-            onClick={() => setCurrentView("menu")}
-            className="back-button"
-          >
+          <button onClick={() => setCurrentView("menu")} className="back-button">
             Retour au menu
           </button>
 
@@ -89,7 +81,7 @@ const App = () => {
             {images.map((image) => (
               <div key={image.id} className="image-item">
                 <img
-                  src={`data:image/jpeg;base64,${image.image_data}`}
+                  src={`http://localhost:5000/image/${image.id}`} // Correct image URL
                   alt="aperçu"
                   className="image-preview"
                 />
@@ -102,7 +94,7 @@ const App = () => {
                 </button>
                 <button
                   className="view-button"
-                  onClick={() => setSelectedImage(image)}
+                  onClick={() => handleViewImage(image.id)} // Voir l'image
                 >
                   Voir
                 </button>
@@ -190,12 +182,15 @@ const App = () => {
       {selectedImage && (
         <div className="modal">
           <div className="modal-content">
-            <button className="close-button" onClick={() => setSelectedImage(null)}>
+            <button
+              className="close-button"
+              onClick={() => setSelectedImage(null)}
+            >
               Fermer
             </button>
             <img
-              src={`data:image/jpeg;base64,${selectedImage.image_data}`}
-              alt="aperçu"
+              src={`http://localhost:5000/image/${selectedImage.id}`} // Image en taille réelle
+              alt="image sélectionnée"
               className="modal-image"
             />
           </div>

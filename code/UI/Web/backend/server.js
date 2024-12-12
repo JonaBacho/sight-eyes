@@ -41,7 +41,7 @@ db.connect((err) => {
 
 // Fonction pour envoyer des signaux au processus principal
 const sendSignal = (signal, res) => {
-    const programPID = fs.readFileSync(path.join(__dirname, 'program_pid.txt'), 'utf8'); // Stockez le PID du programme principal dans un fichier
+    const programPID = fs.readFileSync(path.join(__dirname, '../../signal-handler/program_pid.txt'), 'utf8'); // Stockez le PID du programme principal dans un fichier
 
     if (!programPID) {
         return res.status(500).send('❌ Impossible de trouver le PID du programme principal.');
