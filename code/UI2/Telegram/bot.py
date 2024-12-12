@@ -85,11 +85,11 @@ def upload_image(message: Message):
 
         # Demander un mot-clé pour l'image
         bot.send_message(received_message.chat.id, "🔑 Veuillez envoyer un mot-clé pour cette image.")
-        user_state[message.chat.id] = {'waiting_for_key': True}
+        user_state[received_message.chat.id] = {'waiting_for_key': True}
         
         @bot.message_handler(content_types=['text'])
         def handle_keyword(keyword_message: Message):
-            if user_state.get(id_message.chat.id, {}).get('waiting_for_key'):
+            if user_state.get(keyword_message.chat.id, {}).get('waiting_for_key'):
                 keyword = keyword_message.text.strip()
                 if not keyword:
                     bot.send_message(keyword_message.chat.id, "❌ Le mot-clé ne peut pas être vide.")
