@@ -14,7 +14,7 @@ app.use(express.json());
 // Configuration de Multer pour stocker les images
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
-        const uploadPath = path.join(__dirname, '../image');
+        const uploadPath = path.join(__dirname, '../../image');
         if (!fs.existsSync(uploadPath)) {
             fs.mkdirSync(uploadPath, { recursive: true });
         }
@@ -74,7 +74,7 @@ app.post('/upload', upload.single('image'), (req, res) => {
         rl.close();
 
         const { filename } = req.file;
-        const filePath = `../../image/${filename}`;
+        const filePath = `image/${filename}`;
         const date_uploaded = new Date().toISOString();
 
         const query = 'INSERT INTO image (image_url, keyword, date_uploaded) VALUES (?, ?, ?)';
@@ -114,7 +114,7 @@ app.get('/image/:id', (req, res) => {
             console.error('❌ Erreur lors de la récupération de l\'image', err);
             return res.status(404).send('❌ Image introuvable.');
         }
-        const imagePath = path.join(__dirname, results[0].image_url);
+        const imagePath = path.join(__dirname, "../../"+results[0].image_url);
         res.sendFile(imagePath);
     });
 });
