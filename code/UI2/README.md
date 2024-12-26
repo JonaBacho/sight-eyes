@@ -49,6 +49,100 @@ L'application Web et le bot Telegram sont synchronisés avec une base de donnée
 
 ---
 
+## Communication à travers les signaux
+
+### Description de la communication
+
+Les signaux envoyés via le bot Telegram (ou l'application Web) influencent directement un **programme principal** en cours d'exécution sur le Raspberry Pi. Ce programme peut être une boucle principale gérant diverses opérations du robot, telles que des mouvements ou des tâches spécifiques. 
+
+Le gestionnaire de signaux (`handler.py`) agit comme un intermédiaire pour relayer les commandes reçues depuis le bot vers le programme principal. Cela garantit une synchronisation et une influence en temps réel.
+
+#### Exemple de flux de communication
+1. **Commande depuis le bot Telegram** : 
+   - Un utilisateur envoie un signal, tel que `start`.
+   - Le bot enregistre le signal dans la base de données ou l'envoie directement au gestionnaire.
+
+2. **Traitement par le gestionnaire de signaux** :
+   - Le gestionnaire interprète le signal reçu et l'envoie au programme principal en cours d'exécution.
+
+3. **Réponse du programme principal** :
+   - Le programme principal exécute l'instruction et peut retourner un message de confirmation ou un état d'erreur au gestionnaire.
+
+---
+
+## Fusion du gestionnaire de signaux avec le programme principal
+
+### Objectif
+
+Le but est d'intégrer le gestionnaire de signaux avec le programme principal exécuté sur le Raspberry Pi pour permettre une communication bidirectionnelle. Cela permet de recevoir des commandes en temps réel tout en maintenant le fonctionnement continu du programme principal.
+
+### Étapes pour la fusion
+
+1. **Modifier `handler.py`** :
+   - Adaptez le gestionnaire pour inclure une référence au programme principal.
+   - Ajoutez des fonctions qui peuvent interagir avec le programme principal (par exemple, démarrer/arrêter des tâches, suspendre des boucles, etc.).
+
+   Exemple de gestion des signaux dans le gestionnaire :
+   ```python
+   import queue
+
+   # File partagée pour communiquer avec le programme principal
+   signal_queue = queue.Queue()
+
+   def handle_signal(signal):
+       if signal in ["start", "pause", "cancel", "bip", "resume"]:
+           signal_queue.put(signal)
+           print(f"Signal '{signal}' transmis au programme principal.")
+       else:
+           print(f"Signal '{signal}' non reconnu.")
+   ```
+
+2. **Intégrer le gestionnaire dans le programme principal** :
+   - Importez le gestionnaire de signaux dans le programme principal.
+   - Ajoutez une boucle dédiée pour écouter les commandes transmises par le gestionnaire.
+
+   Exemple de programme principal avec intégration :
+   ```python
+   import time
+   from signal_handler import signal_queue
+
+   def main_program():
+       print("Programme principal démarré.")
+       running = True
+
+       while running:
+           # Vérifie si un signal a été envoyé
+           if not signal_queue.empty():
+               signal = signal_queue.get()
+
+               if signal == "start":
+                   print("Démarrage de la tâche...")
+                   # Code pour démarrer une tâche
+               elif signal == "pause":
+                   print("Tâche mise en pause.")
+                   # Code pour mettre en pause
+               elif signal == "cancel":
+                   print("Tâche annulée.")
+                   running = False  # Exemple d'arrêt complet
+               elif signal == "bip":
+                   print("Bip sonore émis.")
+                   # Code pour un bip sonore
+               elif signal == "resume":
+                   print("Reprise de la tâche.")
+                   # Code pour reprendre
+
+           time.sleep(0.1)  # Évite une boucle trop rapide
+
+   if __name__ == "__main__":
+       main_program()
+   ```
+
+3. **Tester la communication** :
+   - Lancez le gestionnaire de signaux en arrière-plan.
+   - Démarrez le programme principal et envoyez des signaux via le bot Telegram pour vérifier que chaque commande est correctement interprétée.
+
+---
+
 ## Tutoriels d'utilisation
 
 ### Bot Telegram
@@ -59,125 +153,6 @@ L'application Web et le bot Telegram sont synchronisés avec une base de donnée
 
 ---
 
-## Prérequis
+## Pour plus d'informations
 
-Avant de commencer, assurez-vous que votre Raspberry Pi est prêt pour le déploiement du projet. Voici les étapes pour installer et configurer l'environnement nécessaire.
-
-### 1. Installer le système d'exploitation sur le Raspberry Pi
-- Téléchargez et installez [Raspberry Pi OS](https://www.raspberrypi.org/software/) sur votre Raspberry Pi. Vous pouvez utiliser [Raspberry Pi Imager](https://www.raspberrypi.org/software/) pour une installation rapide sur une carte SD.
-
----
-
-## Déploiement du projet sur Raspberry Pi
-
-### Étape 1 : Configurer le Raspberry Pi
-
-1. **Mettre à jour le Raspberry Pi** :
-   Ouvrez un terminal et exécutez les commandes suivantes pour mettre à jour votre Raspberry Pi :
-   ```bash
-   sudo apt update
-   sudo apt upgrade -y
-   ```
-
-2. **Installer Python 3 et pip** :
-   Le bot Telegram utilise Python, vous devez donc installer Python 3 et son gestionnaire de paquets `pip` :
-   ```bash
-   sudo apt install python3 python3-pip -y
-   ```
-
-3. **Installer Node.js et npm** :
-   Le backend utilise Node.js, donc installez Node.js et npm :
-   ```bash
-   curl -sL https://deb.nodesource.com/setup_16.x | sudo -E bash -
-   sudo apt install -y nodejs
-   ```
-
-4. **Installer MySQL** :
-   Le projet utilise MySQL pour la gestion de la base de données. Nous n'utiliserons pas de mot de passe pour la connexion :
-   ```bash
-   sudo apt install mysql-server -y
-   sudo systemctl start mysql
-   sudo systemctl enable mysql
-   ```
-
-   Après l'installation, vous pouvez vous connecter à MySQL sans mot de passe en utilisant :
-   ```bash
-   sudo mysql
-   ```
-
-   Assurez-vous qu'il n'y a pas de mot de passe défini pour l'utilisateur root en exécutant la commande suivante dans MySQL :
-   ```sql
-   ALTER USER 'root'@'localhost' IDENTIFIED BY '';
-   ```
-
-5. **Installer d'autres dépendances pour le projet** :
-   Installez les bibliothèques Python nécessaires pour le bot Telegram :
-   ```bash
-   pip3 install telebot mysql-connector-python requests
-   ```
-
----
-
-### Étape 2 : Configurer la base de données
-
-1. **Créer une base de données MySQL** :
-   Connectez-vous à MySQL et créez une nouvelle base de données pour le projet :
-   ```bash
-   mysql -u root
-   CREATE DATABASE ImageDB;
-   EXIT;
-   ```
-
-2. **Importer le schéma de la base de données** :
-   Importez le fichier `database.sql` dans votre base de données :
-   ```bash
-   mysql -u root ImageDB < db/database.sql
-   ```
-
-3. **Mettre à jour les informations de connexion** :
-   Mettez à jour les fichiers `bot.py` et le backend avec vos informations de connexion MySQL (nom de la base de données, utilisateur, mot de passe).
-
----
-
-### Étape 3 : Déployer le bot Telegram
-
-1. **Rendez-vous dans le dossier `Telegram/`** :
-   Allez dans le répertoire du bot Telegram et configurez-le en modifiant le fichier `bot.py` avec votre token Telegram et les informations de la base de données.
-
-2. **Lancez le bot** :
-   Exécutez le bot Telegram avec la commande suivante :
-   ```bash
-   python3 bot.py
-   ```
-
----
-
-### Étape 4 : Déployer l'application Web
-
-1. **Lancer le backend** :
-   Allez dans le dossier `Web/backend` et démarrez le serveur backend avec la commande :
-   ```bash
-   node server.js
-   ```
-
-2. **Lancer le frontend** :
-   Dans un autre terminal, allez dans le dossier `Web/frontend` et lancez le serveur frontend avec la commande :
-   ```bash
-   npm start
-   ```
-
----
-
-## Fonctionnement des signaux
-
-Voici une explication détaillée de chaque signal que vous pouvez envoyer via le bot Telegram pour interagir avec le robot :
-
-- **start** : Lance une nouvelle opération ou tâche dans le robot. Cela peut inclure des tâches de traitement d'image, de mouvement ou d'autres actions configurées.
-- **pause** : Met en pause l'opération en cours. Utile pour suspendre une tâche avant qu'elle ne soit terminée.
-- **cancel** : Annule l'opération en cours, interrompant tout traitement ou mouvement.
-- **bip** : Envoie un signal au robot pour qu'il émette un bip sonore, utile pour signaler un événement ou une étape.
-- **resume** : Reprend une opération en pause, permettant de continuer là où elle s'était arrêtée.
-
----
-
-## Pour plus d'informations sur le projet, consultez le [README principal](../../README.md).
+Pour toute question ou problème, consultez la documentation complète ou contactez-nous directement.

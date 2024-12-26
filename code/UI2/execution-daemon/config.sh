@@ -8,10 +8,10 @@ After=network.target
 
 [Service]
 Type=simple
-ExecStart=/usr/bin/python3 /chemin/vers/start_daemon.py
+ExecStart=/usr/bin/python3 ./start_daemon.py
 Restart=always
 User=pi
-WorkingDirectory=/chemin/vers/le/dossier/de/votre/script
+WorkingDirectory=.
 StandardOutput=journal
 StandardError=journal
 

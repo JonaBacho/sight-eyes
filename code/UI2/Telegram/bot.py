@@ -162,6 +162,23 @@ def send_signal_to_program(signal_type: int, message: Message, success_msg: str)
     except Exception as e:
         bot.send_message(message.chat.id, f"❌ Erreur : {e}")
 
+@bot.message_handler(commands=['pause'])
+def pause_signal(message: Message):
+    send_signal_to_program(signal_type=signal.SIGSTOP, message=message, success_msg="⏸️ Programme mis en pause.")
+
+@bot.message_handler(commands=['resume'])
+def resume_signal(message: Message):
+    send_signal_to_program(signal_type=signal.SIGCONT, message=message, success_msg="▶️ Programme repris.")
+
+@bot.message_handler(commands=['cancel'])
+def cancel_signal(message: Message):
+    send_signal_to_program(signal_type=signal.SIGTERM, message=message, success_msg="❌ Programme arrêté.")
+
+@bot.message_handler(commands=['bip'])
+def bip_signal(message: Message):
+    send_signal_to_program(signal_type=signal.SIGUSR1, message=message, success_msg="🔔 Signal de bip envoyé.")
+
+
 @bot.message_handler(content_types=['text'])
 def handle_keyword(keyword_message: Message):
     global filey
@@ -239,21 +256,6 @@ def handle_keyword(keyword_message: Message):
             bot.send_message(id_message.chat.id, "❌ Aucune image trouvée avec cet ID.")
 
 
-@bot.message_handler(commands=['pause'])
-def pause_signal(message: Message):
-    send_signal_to_program(signal_type=signal.SIGSTOP, message=message, success_msg="⏸️ Programme mis en pause.")
-
-@bot.message_handler(commands=['resume'])
-def resume_signal(message: Message):
-    send_signal_to_program(signal_type=signal.SIGCONT, message=message, success_msg="▶️ Programme repris.")
-
-@bot.message_handler(commands=['cancel'])
-def cancel_signal(message: Message):
-    send_signal_to_program(signal_type=signal.SIGTERM, message=message, success_msg="❌ Programme arrêté.")
-
-@bot.message_handler(commands=['bip'])
-def bip_signal(message: Message):
-    send_signal_to_program(signal_type=signal.SIGUSR1, message=message, success_msg="🔔 Signal de bip envoyé.")
 
 
 # Lancement du bot
