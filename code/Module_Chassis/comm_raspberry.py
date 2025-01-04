@@ -55,7 +55,7 @@ if __name__ == "__main__":
         while True:
             # Envoi des données toutes les 1 secondes
             # Vous pouvez modifier ces valeurs à chaque itération si nécessaire
-            send_data(speed, angle, si_obstacle, si_actif, si_sonner
+            send_data(speed, angle, si_obstacle, si_actif, si_sonner)
             # Lecture des données envoyées par l'Arduino
             read_from_arduino()
             time.sleep(1)  # Pause de 1 seconde

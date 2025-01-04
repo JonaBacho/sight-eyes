@@ -5,12 +5,12 @@ import numpy as np
 import tensorflow as tf
 from object_detection.utils import label_map_util, visualization_utils as vis_util
 from utils.app_utils import FPS, WebcamVideoStream, HLSVideoStream
-from .arduino import ArduinoCommunication
+from arduino import ArduinoCommunication
 from threading import Event
 
 
 class ObjectTracker:
-    def __init__(self, source='webcam', stream_url=None, image_path=None, target_name=None, fov_horizontal=60, fov_vertical=40, webcam_width=640, webcam_height=480):
+    def __init__(self, source='webcam', stream_url=None, image_path=None, target_name=None, fov_horizontal=60, fov_vertical=40, webcam_width=640, webcam_height=480, port_arduino='/dev/ttyUSB0'):
         """
         Initialise le tracker d'objets.
 
@@ -22,6 +22,7 @@ class ObjectTracker:
         :param fov_vertical: Champ de vision vertical en degrés (par défaut 40 pour ESP32-cam).
         :param webcam_width: Largeur de la vidéo pour webcam (par défaut 640 pixels).
         :param webcam_height: Hauteur de la vidéo pour webcam (par défaut 480 pixels).
+        :param port_arduino: Chemin du port série pour communiquer avec Arduino (par défaut '/dev/ttyUSB0').
         """
         self.source = source
         self.stream_url = stream_url
@@ -46,7 +47,7 @@ class ObjectTracker:
         self.min_angle = 0
         self.max_screen_ratio = 0.8  # 80% de la taille de l'écran
         self.current_speed = 0  # Vitesse initiale
-        self.arduino_comm = ArduinoCommunication(port='/dev/ttyUSB0', baudrate=9600)
+        #self.arduino_comm = ArduinoCommunication(port=port_arduino, baudrate=9600)
         self.stop_event = Event()
 
         # Identifie l'objet cible
@@ -113,15 +114,20 @@ class ObjectTracker:
         ymin, xmin, ymax, xmax = box
         x_center = (xmin + xmax) / 2
         y_center = (ymin + ymax) / 2
+        print(f"x_center: {x_center}, y_center: {y_center}")
 
         coeff_horizontal = 2 * (frame_width / self.fov_horizontal)
         coeff_vertical = 2 * (frame_height / self.fov_vertical)
+        print(f"coeff_horizontal: {coeff_horizontal}, coeff_vertical: {coeff_vertical}")
 
-        new_servo_horizontal_angle = self.servo_horizontal_angle + (x_center - (frame_width / 2)) / coeff_horizontal
-        new_servo_vertical_angle = self.servo_vertical_angle + (y_center - (frame_height / 2)) / coeff_vertical
+        new_servo_horizontal_angle = self.servo_horizontal_angle + ((x_center - (frame_width / 2)) / coeff_horizontal)
+        new_servo_vertical_angle = self.servo_vertical_angle + ((y_center - (frame_height / 2)) / coeff_vertical)
+        print(f"new_servo_horizontal_angle: {new_servo_horizontal_angle}, new_servo_vertical_angle: {new_servo_vertical_angle}")
 
-        self.servo_horizontal_angle = max(self.min_angle, min(self.max_angle, new_servo_horizontal_angle))
-        self.servo_vertical_angle = max(self.min_angle, min(self.max_angle, new_servo_vertical_angle))
+        self.servo_horizontal_angle = new_servo_horizontal_angle
+        self.servo_vertical_angle = new_servo_vertical_angle
+        #self.servo_horizontal_angle = max(self.min_angle, min(self.max_angle, new_servo_horizontal_angle))
+        #self.servo_vertical_angle = max(self.min_angle, min(self.max_angle, new_servo_vertical_angle))
 
         return self.servo_horizontal_angle, self.servo_vertical_angle
 
@@ -167,7 +173,7 @@ class ObjectTracker:
                     horizontal_angle, vertical_angle = self._calculate_servo_angles(box, frame_width, frame_height)
                     speed = self._calculate_speed(box, frame_width, frame_height)
                     is_close = True if speed == 0 else False
-                    self.arduino_comm.send_data(horizontal_angle, vertical_angle, speed, is_close)  # envoi à l'arduino
+                    #self.arduino_comm.send_data(horizontal_angle, vertical_angle, speed, is_close)  # envoi à l'arduino
                     print(f"Angles: Horizontal={horizontal_angle:.2f}, Vertical={vertical_angle:.2f}")
                     vis_util.visualize_boxes_and_labels_on_image_array(
                         frame, np.expand_dims(box, axis=0), np.array([class_id]), np.array([np.squeeze(scores)[i]]),
@@ -199,9 +205,11 @@ class ObjectTracker:
                 frame, found = self._process_frame(frame)
 
                 if not found:
-                    self.arduino_comm.send_data(self.servo_horizontal_angle, self.servo_vertical_angle, 0, rotate=True)
+                    #self.arduino_comm.send_data(self.servo_horizontal_angle, self.servo_vertical_angle, 0, rotate=True)
+                    print("Object not found")
 
-                distance = self.arduino_comm.receive_distance()
+                #distance = self.arduino_comm.receive_distance()
+                distance = 100
                 if distance and distance < 10:  # Ex. seuil pour l'arrêt
                     self.stop_event.set()
                     break
@@ -222,9 +230,9 @@ class ObjectTracker:
 
 # Exemple d'utilisation
 if __name__ == '__main__':
-    #tracker = ObjectTracker(source='stream', stream_url='http://192.168.1.100:81', target_name='person')
-    path = os.getcwd() + os.sep + 'media' + os.sep + 'cell_phone.jpeg'
-    tracker = ObjectTracker(source='webcam', image_path=path, target_name=None)
-    print(tracker.target_id)
-    #tracker.start_tracking()
+    tracker = ObjectTracker(source='stream', stream_url='http://172.20.10.8:81/stream', target_name='person', port_arduino='COM6')
+    #path = os.getcwd() + os.sep + 'media' + os.sep + 'cell_phone.jpeg'
+    #tracker = ObjectTracker(source='webcam', image_path=path, target_name=None)
+    #print(tracker.target_id)
+    tracker.start_tracking()
 
