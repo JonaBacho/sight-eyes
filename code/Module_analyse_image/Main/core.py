@@ -9,8 +9,7 @@ class Core:
         """
         Initialise le tracker d'objets.
 
-        :param image_path: Chemin vers une image pour identifier l'objet cible.
-        :param target_name: Nom de l'objet cible parmi les 90 reconnus.
+        :param image: Image pour identifier l'objet cible.
         :param server_address: adresse IP du serveur websocket.
         :param port: port pour le client websocket.
         """
@@ -38,7 +37,6 @@ class Core:
     def stop_tracking(self):
         self.stop_event.set()
         self.websocket_client.stop()
-        self.bip()
 
     def resume_tracking(self):
         self.stop_event.clear()
@@ -62,6 +60,7 @@ class Core:
                 distance = self.arduino_comm.receive_distance()
                 if found and distance and distance < 10:  # Ex. seuil pour l'arrêt
                     self.stop_event.set()
+                    self.bip()
                     break
 
         except Exception as e:
