@@ -5,27 +5,22 @@ from threading import Event
 from client import Client
 
 class Core:
-    def __init__(self, image_path=None, target_name=None, server_address="localhost", port="12345"):
+    def __init__(self, image=None, server_address="localhost", port="12345"):
         """
         Initialise le tracker d'objets.
 
-        :param source: 'webcam' ou 'stream' pour choisir la source vidéo.
-        :param stream_url: URL du flux vidéo en streaming (requis si source='stream').
         :param image_path: Chemin vers une image pour identifier l'objet cible.
         :param target_name: Nom de l'objet cible parmi les 90 reconnus.
-        :param fov_horizontal: Champ de vision horizontal en degrés (par défaut 60 pour ESP32-cam).
-        :param fov_vertical: Champ de vision vertical en degrés (par défaut 40 pour ESP32-cam).
-        :param webcam_width: Largeur de la vidéo pour webcam (par défaut 640 pixels).
-        :param webcam_height: Hauteur de la vidéo pour webcam (par défaut 480 pixels).
+        :param server_address: adresse IP du serveur websocket.
+        :param port: port pour le client websocket.
         """
-        self.image_path = image_path
-        self.target_name = target_name
+        self.image = image
 
-        self.model_name = 'ssd_mobilenet_v1_coco_11_06_2017'
-        self.cwd_path = os.getcwd()
-        self.path_to_ckpt = os.path.join(self.cwd_path, 'object_detection', self.model_name, 'frozen_inference_graph.pb')
-        self.path_to_labels = os.path.join(self.cwd_path, 'object_detection', 'data', 'mscoco_label_map.pbtxt')
-        self.target_id = None
+        # Initialisation des variables
+        self.activate_bip = False
+        self.is_close = False
+        self.servo_horizontal_angle = 90
+        self.servo_vertical_angle = 90
         self.current_speed = 0  # Vitesse initiale
         self.arduino_comm = ArduinoCommunication(port='LPT1', baudrate=9600)
         self.stop_event = Event()
@@ -34,32 +29,38 @@ class Core:
         # Identifie l'objet cible
         try:
             self.websocket_client.receive()
-            if self.image_path:
-                self.target_id = self._identify_target_from_image()
-            elif self.target_name:
-                self.target_id = self._get_target_id_by_name()
+            if self.image:
+                self.target_id = self.websocket_client.send(self.image)
+            
         except Exception as e:
             raise e
 
     def stop_tracking(self):
         self.stop_event.set()
         self.websocket_client.stop()
+        self.bip()
 
     def resume_tracking(self):
         self.stop_event.clear()
         
+    def bip(self):
+        self.activate_bip = True
+        self.arduino_comm.send_data(self.servo_horizontal_angle, self.servo_vertical_angle, self.current_speed, self.is_close, self.activate_bip)
+        self.activate_bip = False
+
     def start_tracking(self):
         """Démarre le suivi de l'objet à partir de la source vidéo."""
         try:
             while not self.stop_event.is_set():
                 response = self.websocket_client.response
-                found, servo_horizontal_angle, servo_vertical_angle, speed, is_close = response
-                self.arduino_comm.send_data(servo_horizontal_angle, servo_vertical_angle, speed, is_close)
+                found, self.servo_horizontal_angle, self.servo_vertical_angle, self.current_speed, self.is_close = response
+                self.arduino_comm.send_data(self.servo_horizontal_angle, self.servo_vertical_angle, self.current_speed, self.is_close, self.activate_bip)
                 if not found:
-                    self.arduino_comm.send_data(servo_horizontal_angle, servo_vertical_angle, 0, rotate=True)
+                    self.current_speed, self.is_close, self.activate_bip = 0, True, False
+                    self.arduino_comm.send_data(self.servo_horizontal_angle, self.servo_vertical_angle, self.current_speed, self.is_close, self.activate_bip)
 
                 distance = self.arduino_comm.receive_distance()
-                if distance and distance < 10:  # Ex. seuil pour l'arrêt
+                if found and distance and distance < 10:  # Ex. seuil pour l'arrêt
                     self.stop_event.set()
                     break
 

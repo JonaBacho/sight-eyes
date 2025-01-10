@@ -5,6 +5,7 @@ import os
 import signal
 import requests
 from telebot.types import Message
+from core import Core
 
 # Token Telegram
 TOKEN = '7734765252:AAG1zYgVpKJZlMh5TWS1frHRYin0a6Fq3Z4'
@@ -19,6 +20,8 @@ active_image = {
 }
 
 filey = None
+
+core = None
 
 # Variable pour suivre l'état de l'utilisateur (en attente de sélection d'un ID)
 user_state = {}
@@ -122,6 +125,11 @@ def list_images(message: Message):
                             img_file,
                             caption=f"ID: {image_id}\nMot-clé: {keyword}\nDate: {date_uploaded}"
                         )
+                        # Créer une instance Core pour l'image à rechercher
+                        server_address = "localhost" #Remplacer par l'adresse IP du serveur websocket
+                        port = "12345" #Remplacer par le port du serveur websocket
+                        core = Core(img_file, server_address, port)
+                        core.start_tracking()
                 else:
                     bot.send_message(
                         message.chat.id,
@@ -146,37 +154,51 @@ def list_images(message: Message):
 # Signaux inchangés...
 # Commande pause, resume, cancel, bip
 
-# Gestion des signaux locaux
-def send_signal_to_program(signal_type: int, message: Message, success_msg: str):
-    if PROGRAM_PID is None:
-        bot.send_message(message.chat.id, "❌ Le PID du programme principal est introuvable.")
-        return
-
-    try:
-        os.kill(PROGRAM_PID, signal_type)
-        bot.send_message(message.chat.id, success_msg)
-    except ProcessLookupError:
-        bot.send_message(message.chat.id, "❌ Le programme principal n'est pas actif.")
-    except PermissionError:
-        bot.send_message(message.chat.id, "❌ Permissions insuffisantes pour envoyer le signal.")
-    except Exception as e:
-        bot.send_message(message.chat.id, f"❌ Erreur : {e}")
-
 @bot.message_handler(commands=['pause'])
 def pause_signal(message: Message):
-    send_signal_to_program(signal_type=signal.SIGSTOP, message=message, success_msg="⏸️ Programme mis en pause.")
+    try:
+        if core:
+            core.stop_tracking()
+            bot.send_message(message.chat.id, "⏸️ Programme mis en pause.")
+        else:
+            bot.send_message(message.chat.id, "❌ Aucun programme en cours d'exécution.")
+    except Exception as e:
+        bot.send_message(message.chat.id, f"❌ Erreur lors de la pause du programme : {e}")
 
 @bot.message_handler(commands=['resume'])
 def resume_signal(message: Message):
-    send_signal_to_program(signal_type=signal.SIGCONT, message=message, success_msg="▶️ Programme repris.")
+    try:
+        if core:
+            core.resume_tracking()
+            core.start_tracking()
+            bot.send_message(message.chat.id, "▶️ Programme repris.")
+        else:
+            bot.send_message(message.chat.id, "❌ Aucun programme en cours d'exécution.")
+    except Exception as e:
+        bot.send_message(message.chat.id, f"❌ Erreur lors de la reprise du programme : {e}")
 
 @bot.message_handler(commands=['cancel'])
 def cancel_signal(message: Message):
-    send_signal_to_program(signal_type=signal.SIGTERM, message=message, success_msg="❌ Programme arrêté.")
+    try:
+        if core:
+            core.stop_tracking()
+            core = None
+            bot.send_message(message.chat.id, "❌ Programme annulé.")
+        else:
+            bot.send_message(message.chat.id, "❌ Aucun programme en cours d'exécution.")
+    except Exception as e:
+        bot.send_message(message.chat.id, f"❌ Erreur lors de l'annulation du programme : {e}")
 
 @bot.message_handler(commands=['bip'])
 def bip_signal(message: Message):
-    send_signal_to_program(signal_type=signal.SIGUSR1, message=message, success_msg="🔔 Signal de bip envoyé.")
+    try:
+        if core:
+            core.bip()
+            bot.send_message(message.chat.id, "🔔 Bip envoyé.")
+        else:
+            bot.send_message(message.chat.id, "❌ Aucun programme en cours d'exécution.")
+    except Exception as e:
+        bot.send_message(message.chat.id, f"❌ Erreur lors de l'envoi du bip : {e}")
 
 
 @bot.message_handler(content_types=['text'])
