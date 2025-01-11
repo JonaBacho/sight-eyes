@@ -128,8 +128,11 @@ def list_images(message: Message):
                         # Créer une instance Core pour l'image à rechercher
                         server_address = "localhost" #Remplacer par l'adresse IP du serveur websocket
                         port = "12345" #Remplacer par le port du serveur websocket
-                        core = Core(img_file, server_address, port)
-                        core.start_tracking()
+                        try:
+                            core = Core(img_file, server_address, port)
+                            core.start_tracking()
+                        except Exception as e:
+                            bot.send_message(message.chat.id, f"❌ Erreur lors de la création de l'instance Core : {e}")
                 else:
                     bot.send_message(
                         message.chat.id,
