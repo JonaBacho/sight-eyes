@@ -1,5 +1,4 @@
-import os
-import numpy as np
+import time
 from arduino import ArduinoCommunication
 from threading import Event
 from client import Client
@@ -17,9 +16,8 @@ class Core:
 
         # Initialisation des variables
         self.activate_bip = False
-        self.is_close = False
+        self.found = False
         self.servo_horizontal_angle = 90
-        self.servo_vertical_angle = 90
         self.current_speed = 0  # Vitesse initiale
         self.arduino_comm = ArduinoCommunication(port='LPT1', baudrate=9600)
         self.stop_event = Event()
@@ -43,7 +41,8 @@ class Core:
         
     def bip(self):
         self.activate_bip = True
-        self.arduino_comm.send_data(self.servo_horizontal_angle, self.servo_vertical_angle, self.current_speed, self.is_close, self.activate_bip)
+        self.arduino_comm.send_data(self.current_speed, self.servo_horizontal_angle, not self.found, not self.stop_event.is_set, self.activate_bip)
+        time.sleep(5)
         self.activate_bip = False
 
     def start_tracking(self):
@@ -51,14 +50,14 @@ class Core:
         try:
             while not self.stop_event.is_set():
                 response = self.websocket_client.response
-                found, self.servo_horizontal_angle, self.servo_vertical_angle, self.current_speed, self.is_close = response
-                self.arduino_comm.send_data(self.servo_horizontal_angle, self.servo_vertical_angle, self.current_speed, self.is_close, self.activate_bip)
-                if not found:
-                    self.current_speed, self.is_close, self.activate_bip = 0, True, False
-                    self.arduino_comm.send_data(self.servo_horizontal_angle, self.servo_vertical_angle, self.current_speed, self.is_close, self.activate_bip)
+                self.found, self.servo_horizontal_angle, self.current_speed = response
+                self.arduino_comm.send_data(self.current_speed, self.servo_horizontal_angle, not self.found, not self.stop_event.is_set, self.activate_bip)
+                if not self.found:
+                    self.current_speed, self.activate_bip = 0, False
+                    self.arduino_comm.send_data(self.current_speed, self.servo_horizontal_angle, not self.found, not self.stop_event.is_set, self.activate_bip)
 
                 distance = self.arduino_comm.receive_distance()
-                if found and distance and distance < 10:  # Ex. seuil pour l'arrêt
+                if self.found and distance and distance < 10:  # Ex. seuil pour l'arrêt
                     self.stop_event.set()
                     self.bip()
                     break
