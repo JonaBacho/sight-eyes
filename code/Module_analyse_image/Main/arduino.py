@@ -12,7 +12,7 @@ class ArduinoCommunication:
     def send_data(self, speed, angle, obstacle, active, activate_bip):
         """Envoie les données à l'Arduino."""
         try:
-            data = f"{speed},{angle},{obstacle},{active}, {activate_bip}\n"
+            data = f"{speed},{angle},{obstacle},{active},{activate_bip}\n"
             self.serial_conn.write(data.encode())
         except Exception as e:
             print(f"Erreur lors de l'envoi des données : {e}")
