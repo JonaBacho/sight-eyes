@@ -185,6 +185,13 @@ def standard_colors():
 	]
 	return colors
 
+def sign(value):
+	if value < 0:
+		return -1
+	elif value > 0:
+		return 1
+	else:
+		return 0
 
 def color_name_to_rgb():
 	colors_rgb = []

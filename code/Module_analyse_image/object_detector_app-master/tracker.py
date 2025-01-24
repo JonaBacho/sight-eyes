@@ -1,20 +1,21 @@
 import os
 import cv2
+import math
 import time
 import numpy as np
 import tensorflow as tf
 from object_detection.utils import label_map_util, visualization_utils as vis_util
-from utils.app_utils import FPS, WebcamVideoStream, HLSVideoStream
-from arduino import ArduinoCommunication
+from utils.app_utils import FPS, WebcamVideoStream, HLSVideoStream, sign
+from utils.stream import ESP32VideoStream
 from threading import Event
 
 
 class ObjectTracker:
-    def __init__(self, source='webcam', stream_url=None, image_path=None, target_name=None, fov_horizontal=60, fov_vertical=40, webcam_width=640, webcam_height=480, port_arduino='/dev/ttyUSB0'):
+    def __init__(self, source='webcam', stream_url=None, image_path=None, target_name=None, fov_horizontal=60, fov_vertical=40, webcam_width=640, webcam_height=480):
         """
         Initialise le tracker d'objets.
 
-        :param source: 'webcam' ou 'stream' pour choisir la source vidéo.
+        :param source: 'webcam' ou 'stream' ou 'video' pour choisir la source vidéo.
         :param stream_url: URL du flux vidéo en streaming (requis si source='stream').
         :param image_path: Chemin vers une image pour identifier l'objet cible.
         :param target_name: Nom de l'objet cible parmi les 90 reconnus.
@@ -118,13 +119,14 @@ class ObjectTracker:
         x_center = (xmin + xmax) / 2
         y_center = (ymin + ymax) / 2
         print(f"x_center: {x_center}, y_center: {y_center}")
+        sign_horizontal = sign(x_center - (frame_width / 2))
+        sign_vertical = sign(y_center - (frame_height / 2))
 
-        coeff_horizontal = 2 * (frame_width / self.fov_horizontal)
-        coeff_vertical = 2 * (frame_height / self.fov_vertical)
-        print(f"coeff_horizontal: {coeff_horizontal}, coeff_vertical: {coeff_vertical}")
+        coeff_horizontal = 2 * sign_horizontal * abs(x_center - (frame_width / 2)) * math.tan(math.radians((sign_horizontal * self.fov_horizontal/2) + 90)) / frame_width
+        new_servo_horizontal_angle = (self.servo_horizontal_angle + math.degrees(math.atan(coeff_horizontal))) % 360
 
-        new_servo_horizontal_angle = self.servo_horizontal_angle + ((x_center - (frame_width / 2)) / coeff_horizontal)
-        new_servo_vertical_angle = self.servo_vertical_angle + ((y_center - (frame_height / 2)) / coeff_vertical)
+        coeff_vertical = 2 * sign_vertical * abs(y_center - (frame_height / 2)) * math.tan(math.radians((sign_vertical * self.fov_vertical/2) + 90)) / frame_height
+        new_servo_vertical_angle = self.servo_vertical_angle + math.degrees(math.atan(coeff_vertical)) % 360
         print(f"new_servo_horizontal_angle: {new_servo_horizontal_angle}, new_servo_vertical_angle: {new_servo_vertical_angle}")
 
         self.servo_horizontal_angle = new_servo_horizontal_angle
@@ -198,7 +200,9 @@ class ObjectTracker:
             if self.source == 'webcam':
                 video_capture = WebcamVideoStream(src=0, width=self.webcam_width, height=self.webcam_height).start()
             elif self.source == 'stream' and self.stream_url:
-                video_capture = HLSVideoStream(src=self.stream_url).start()
+                video_capture = ESP32VideoStream(url=self.stream_url).start()
+            elif self.source == 'video':
+                video_capture = HLSVideoStream(src=1).start()
             else:
                 raise ValueError("Source vidéo non valide.")
 
@@ -219,10 +223,8 @@ class ObjectTracker:
 
                 cv2.imshow('Object Tracker', frame)
                 fps.update()
-
-
-
-                if cv2.waitKey(1) & 0xFF == ord('q'):
+                key = cv2.waitKey(1)
+                if key == 27:   # correspond à ESC
                     break
 
             fps.stop()
@@ -234,9 +236,8 @@ class ObjectTracker:
 
 # Exemple d'utilisation
 if __name__ == '__main__':
-    tracker = ObjectTracker(source='stream', stream_url='http://172.20.10.8:81/stream', target_name='person', port_arduino='COM6')
+    tracker = ObjectTracker(source='stream', stream_url='http://172.20.10.8', target_name='person')
     #path = os.getcwd() + os.sep + 'media' + os.sep + 'cell_phone.jpeg'
     #tracker = ObjectTracker(source='webcam', image_path=path, target_name=None)
     #print(tracker.target_id)
     tracker.start_tracking()
-
