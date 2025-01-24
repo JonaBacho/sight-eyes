@@ -27,9 +27,10 @@ class Core:
         try:
             self.websocket_client.receive()
             if self.image:
-                self.target_id = self.websocket_client.send(self.image)
+                
+                self.target_id = self.websocket_client.send(stop=False, message_type="image", data=self.image)
             elif self.target_name:
-                self.target_id = self.websocket_client.send(self.target_name)
+                self.target_id = self.websocket_client.send(stop=False, message_type="target_name",data=self.target_name)
             else:
                 raise ValueError("Aucune image ou nom de cible fournis.")
             
