@@ -1,4 +1,5 @@
 import telebot
+import asyncio
 import mysql.connector
 from mysql.connector import Error
 import os
@@ -113,7 +114,7 @@ def search_now(message: Message):
         try:
             core = Core(image=filey, server_address=server_address, port=port)
             bot.send_message(message.chat.id, f"🔍 Recherche en cours...")
-            core.start_tracking()
+            asyncio.run(core.start_tracking())
         except Exception as e:
             bot.send_message(message.chat.id, f"❌ Erreur lors de la création de l'instance Core : {e}")
 
@@ -130,7 +131,7 @@ def search_now(message: Message):
             try:
                 core = Core(target_name=keyword, server_address=server_address, port=port)
                 bot.send_message(received_message.chat.id, f"🔍 Recherche en cours...")
-                core.start_tracking()
+                asyncio.run(core.start_tracking())
             except Exception as e:
                 bot.send_message(received_message.chat.id, f"❌ Erreur lors de la création de l'instance Core : {e}")
 
@@ -314,7 +315,7 @@ def handle_keyword(keyword_message: Message):
                 port = "12346" #Remplacer par le port du serveur websocket
                 try:
                     core = Core(img_file, server_address, port)
-                    core.start_tracking()
+                    asyncio.run(core.start_tracking())
                 except Exception as e:
                     bot.send_message(keyword_message.chat.id, f"❌ Erreur lors de la création de l'instance Core : {e}")
                 user_state[id_message.chat.id]['waiting_for_id'] = False  # Désactiver l'attente d'ID
