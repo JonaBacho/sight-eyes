@@ -59,6 +59,9 @@ class ObjectTracker:
         except Exception as e:
             print(f"Erreur lors de l'identification de l'objet cible : {e}")
 
+    def reset_event(self):
+        self.stop_event = Event()
+
     def _load_label_map(self):
         label_map = label_map_util.load_labelmap(self.path_to_labels)
         categories = label_map_util.convert_label_map_to_categories(
@@ -225,6 +228,7 @@ class ObjectTracker:
             fps.stop()
             video_capture.stop()
             cv2.destroyAllWindows()
+
         except Exception as e:
             print(f"Erreur lors du suivi : {e}")
 
