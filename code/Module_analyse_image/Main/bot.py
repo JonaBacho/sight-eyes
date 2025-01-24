@@ -1,4 +1,5 @@
 import telebot
+import asyncio
 import mysql.connector
 from mysql.connector import Error
 import os
@@ -109,11 +110,11 @@ def search_now(message: Message):
         
         # Créer une instance Core pour l'image à rechercher
         server_address = "localhost" #Remplacer par l'adresse IP du serveur websocket
-        port = "12345"
+        port = "12346"
         try:
             core = Core(image=filey, server_address=server_address, port=port)
             bot.send_message(message.chat.id, f"🔍 Recherche en cours...")
-            core.start_tracking()
+            asyncio.run(core.start_tracking())
         except Exception as e:
             bot.send_message(message.chat.id, f"❌ Erreur lors de la création de l'instance Core : {e}")
 
@@ -121,7 +122,7 @@ def search_now(message: Message):
     def handle_text(received_message: Message):
          # Créer une instance Core pour le target_name entré à rechercher
         server_address = "localhost" #Remplacer par l'adresse IP du serveur websocket
-        port = "12345"
+        port = "12346"
         keyword = received_message.text.strip()
         if not keyword:
             bot.send_message(received_message.chat.id, "❌ Le mot-clé ne peut pas être vide.")
@@ -130,7 +131,7 @@ def search_now(message: Message):
             try:
                 core = Core(target_name=keyword, server_address=server_address, port=port)
                 bot.send_message(received_message.chat.id, f"🔍 Recherche en cours...")
-                core.start_tracking()
+                asyncio.run(core.start_tracking())
             except Exception as e:
                 bot.send_message(received_message.chat.id, f"❌ Erreur lors de la création de l'instance Core : {e}")
 
@@ -311,10 +312,10 @@ def handle_keyword(keyword_message: Message):
                     )
                 # Créer une instance Core pour l'image à rechercher
                 server_address = "localhost" #Remplacer par l'adresse IP du serveur websocket
-                port = "12345" #Remplacer par le port du serveur websocket
+                port = "12346" #Remplacer par le port du serveur websocket
                 try:
                     core = Core(img_file, server_address, port)
-                    core.start_tracking()
+                    asyncio.run(core.start_tracking())
                 except Exception as e:
                     bot.send_message(keyword_message.chat.id, f"❌ Erreur lors de la création de l'instance Core : {e}")
                 user_state[id_message.chat.id]['waiting_for_id'] = False  # Désactiver l'attente d'ID
