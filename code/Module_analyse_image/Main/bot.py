@@ -125,14 +125,7 @@ def list_images(message: Message):
                             img_file,
                             caption=f"ID: {image_id}\nMot-clé: {keyword}\nDate: {date_uploaded}"
                         )
-                        # Créer une instance Core pour l'image à rechercher
-                        server_address = "localhost" #Remplacer par l'adresse IP du serveur websocket
-                        port = "12345" #Remplacer par le port du serveur websocket
-                        try:
-                            core = Core(img_file, server_address, port)
-                            core.start_tracking()
-                        except Exception as e:
-                            bot.send_message(message.chat.id, f"❌ Erreur lors de la création de l'instance Core : {e}")
+                        
                 else:
                     bot.send_message(
                         message.chat.id,
@@ -276,6 +269,14 @@ def handle_keyword(keyword_message: Message):
                         img_file,
                         caption=f"✅ Image sélectionnée !\nID: {active_image['id']}\nMot-clé: {active_image['keyword']}\nDate: {active_image['date_uploaded']}"
                     )
+                # Créer une instance Core pour l'image à rechercher
+                server_address = "localhost" #Remplacer par l'adresse IP du serveur websocket
+                port = "12345" #Remplacer par le port du serveur websocket
+                try:
+                    core = Core(img_file, server_address, port)
+                    core.start_tracking()
+                except Exception as e:
+                    bot.send_message(keyword_message.chat.id, f"❌ Erreur lors de la création de l'instance Core : {e}")
                 user_state[id_message.chat.id]['waiting_for_id'] = False  # Désactiver l'attente d'ID
         else:
             bot.send_message(id_message.chat.id, "❌ Aucune image trouvée avec cet ID.")
