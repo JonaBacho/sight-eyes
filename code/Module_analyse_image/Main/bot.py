@@ -62,9 +62,10 @@ def create_connection():
 @bot.message_handler(commands=['start'])
 def send_welcome(message: Message):
     help_text = (
-        "👋 Bienvenue sur le bot de gestion d'images !\n"
+        "👋 Bienvenue sur Sight Eyes !\n"
         "📤 /upload - Envoyer une image dans la base de données.\n"
-        "🔍 /search - Afficher les images disponibles.\n"
+        "🔍 /search - Afficher les images disponibles pour entamer une recherche.\n"
+        "🔍 /search_now -Entamer une recherche sans enregistrer l'image\n"
         "⏸️ /pause - Mettre en pause le programme principal.\n"
         "▶️ /resume - Reprendre le programme principal.\n"
         "❌ /cancel - Annuler la tâche en cours.\n"
@@ -93,6 +94,45 @@ def upload_image(message: Message):
         # Demander un mot-clé pour l'image
         bot.send_message(received_message.chat.id, "🔑 Veuillez envoyer un mot-clé pour cette image.")
         user_state[received_message.chat.id] = {'waiting_for_key': True}
+
+# Commande /search_now
+@bot.message_handler(commands=['search_now'])
+def search_now(message: Message):
+    bot.send_message(message.chat.id, "🔍 Veuillez envoyer une image ou un mot-clé pour entamer une recherche.")
+    
+    @bot.message_handler(content_types=['photo'])
+    def handle_image(received_message: Message):
+        global filey
+        file_info = bot.get_file(received_message.photo[-1].file_id)
+        file = requests.get(f'https://api.telegram.org/file/bot{TOKEN}/{file_info.file_path}')
+        filey = file.content
+        
+        # Créer une instance Core pour l'image à rechercher
+        server_address = "localhost" #Remplacer par l'adresse IP du serveur websocket
+        port = "12345"
+        try:
+            core = Core(image=filey, server_address=server_address, port=port)
+            bot.send_message(message.chat.id, f"🔍 Recherche en cours...")
+            core.start_tracking()
+        except Exception as e:
+            bot.send_message(message.chat.id, f"❌ Erreur lors de la création de l'instance Core : {e}")
+
+    @bot.message_handler(content_types=['text'])
+    def handle_text(received_message: Message):
+         # Créer une instance Core pour le target_name entré à rechercher
+        server_address = "localhost" #Remplacer par l'adresse IP du serveur websocket
+        port = "12345"
+        keyword = received_message.text.strip()
+        if not keyword:
+            bot.send_message(received_message.chat.id, "❌ Le mot-clé ne peut pas être vide.")
+            return
+        else:
+            try:
+                core = Core(target_name=keyword, server_address=server_address, port=port)
+                bot.send_message(received_message.chat.id, f"🔍 Recherche en cours...")
+                core.start_tracking()
+            except Exception as e:
+                bot.send_message(received_message.chat.id, f"❌ Erreur lors de la création de l'instance Core : {e}")
 
 
 # Commande /search
