@@ -14,57 +14,52 @@ class Server:
         self.connected_clients = set()
         self.tracker = None
         self.stop = False
+        self.image_path = None
+        self.target_name = None
+        self.first_communication = -1
 
-    def init_tracker(self):
+    def init_tracker(self, target_name=None, image_path=None):
         try:
-            self.tracker = ObjectTracker(source='stream', stream_url='http://172.20.10.8', target_name='person')
+            if target_name:
+                self.tracker = ObjectTracker(source='stream', stream_url='http://172.20.10.8', target_name=target_name)
+                return
+            elif image_path:
+                self.tracker = ObjectTracker(source='image', stream_url='http://172.20.10.8', image_path=image_path)
         except Exception as e:
             self.error = f"erreur lors de l'initialisation du serveur: {e}"
             print(self.error)
 
     def process_message(self, data):
-        """
-        Process the message received from the client.
-
-        :param data: The JSON message sent by the client.
-        :return: A response to send back to the client.
-        """
         try:
-            # Handle the stop signal
-            self.stop = data.get("stop", False)
-            if stop:
-                self.running = False
-                return {"status": "server_stopping"}
-
-            # Handle different message types
             message_type = data.get("type")
             if message_type == "target_name":
-                target_name = data.get("data")
-                if target_name:
-                    return {"status": "success", "type": "target_name", "target_name": target_name}
-                else:
-                    return {"error": "Missing target name"}
+                self.target_name = data.get("data")
 
             elif message_type == "image":
                 encoded_image = data.get("data")
-                filename = data.get("filename", "received_image.jpg")
+                filename = data.get("filename")
                 if encoded_image:
-                    # Decode and save the image
                     image_bytes = base64.b64decode(encoded_image)
-                    # Define the folder to save the image
-                    save_path = r"C:\Users\ELEONOR BJOUNKENG\Pictures\NUT"
-                    os.makedirs(save_path, exist_ok=True)  # Ensure the folder exists
+                    save_path = os.getcwd() + os.sep + "image"
+                    os.makedirs(save_path, exist_ok=True)
                     full_file_path = os.path.join(save_path, filename)
                     with open(full_file_path, "wb") as img_file:
                         img_file.write(image_bytes)
                     print(f"Image saved to {full_file_path}")
-                    return {"status": "success", "type": "image", "filename": filename, "path": full_file_path}
+                    self.image_path = full_file_path
                 else:
-                    return {"error": "Missing image data"}
+                    self.error = "Missing image data"
 
-            return {"error": "Unknown message type"}
+            self.stop = data.get("stop", False)
+            if not self.stop:
+                if self.first_communication == -1:
+                    self.init_tracker(self.target_name, self.image_path)
+                    self.first_communication = 1
+                    Thread(target=self.tracker.start_tracking).start()
+
+            self.error = "Unknown message type"
         except Exception as e:
-            return {"error": f"Internal server error: {str(e)}"}
+            self.error = f"Internal server error: {str(e)}"
 
     async def handle_client(self, websocket, path=None):
         self.connected_clients.add(websocket)
@@ -74,14 +69,17 @@ class Server:
                     data = json.loads(message)
                     print(f"Message reçu : {data}")
 
-                    # Process the message and send a response
-                    response = self.process_message(data)
+                    self.process_message(data)
+                    response_data = {
+                        'speed': self.tracker.current_speed,
+                        'horizontal_angle': self.tracker.servo_horizontal_angle,
+                        'object_found': self.tracker.object_found
+                    }
+                    response = {
+                        'data': response_data,
+                        'error': self.error
+                    }
                     await websocket.send(json.dumps(response))
-
-                    # Stop the server if the running flag is set to False
-                    if not self.running:
-                        print("Arrêt du serveur sur demande du client.")
-                        break
 
                 except json.JSONDecodeError:
                     error_response = {"error": "Invalid JSON format"}
@@ -97,21 +95,39 @@ class Server:
         finally:
             self.connected_clients.remove(websocket)
 
+    async def broadcast_updates(self):
+        """
+        Diffuse un message périodique à tous les clients connectés.
+        """
+        while not self.stop:
+            if self.connected_clients:
+                message = {
+                    'info': 'Mise à jour périodique',
+                    'data': {
+                        'speed': self.tracker.current_speed if self.tracker else None,
+                        'horizontal_angle': self.tracker.servo_horizontal_angle if self.tracker else None,
+                        'object_found': self.tracker.object_found if self.tracker else False
+                    },
+                    'error': self.error
+                }
+                await asyncio.gather(*[client.send(json.dumps(message)) for client in self.connected_clients])
+            await asyncio.sleep(0.5)  # Pause de 500 ms
+
     async def start(self):
-        server = await websockets.serve(
-            self.handle_client, 
-            self.host, 
-            self.port
-        )
+        broadcast_task = asyncio.create_task(self.broadcast_updates())
+        server = await websockets.serve(self.handle_client, self.host, self.port)
         print(f"Serveur WebSocket démarré sur ws://{self.host}:{self.port}")
         await server.wait_closed()
+        broadcast_task.cancel()  # Annule la tâche de diffusion périodique
 
     async def stop(self):
         """
-        Fonction pour fermer le serveur proprement
+        Ferme le serveur proprement.
         """
         print("Arrêt du serveur WebSocket.")
+        self.stop = True
         await asyncio.gather(*[client.close() for client in self.connected_clients])
+
 
 async def main():
     server = Server()
