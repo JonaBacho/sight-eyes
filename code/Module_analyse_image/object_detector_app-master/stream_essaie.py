@@ -8,8 +8,6 @@ from time import sleep
 
 import logging
 
-
-
 # Configuration du logging
 
 logging.basicConfig(level=logging.DEBUG)
@@ -147,11 +145,8 @@ def receive_video_stream(esp32_ip="192.168.1.100"):
                     
 
     except Exception as e:
-
         logger.error(f"Erreur: {e}")
-
     finally:
-
         cv2.destroyAllWindows()
 
 
