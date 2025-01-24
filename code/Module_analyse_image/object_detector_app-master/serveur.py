@@ -1,15 +1,26 @@
 import asyncio
 import websockets
 import json
+from tracker import ObjectTracker
 import base64
 import os
+from threading import Thread
 
 class Server:
     def __init__(self, host="localhost", port=12346):
         self.host = host
         self.port = port
+        self.error = None
         self.connected_clients = set()
-        self.running = True
+        self.tracker = None
+        self.stop = False
+
+    def init_tracker(self):
+        try:
+            self.tracker = ObjectTracker(source='stream', stream_url='http://172.20.10.8', target_name='person')
+        except Exception as e:
+            self.error = f"erreur lors de l'initialisation du serveur: {e}"
+            print(self.error)
 
     def process_message(self, data):
         """
@@ -20,7 +31,7 @@ class Server:
         """
         try:
             # Handle the stop signal
-            stop = data.get("stop", False)
+            self.stop = data.get("stop", False)
             if stop:
                 self.running = False
                 return {"status": "server_stopping"}
@@ -87,17 +98,20 @@ class Server:
             self.connected_clients.remove(websocket)
 
     async def start(self):
-        server = await websockets.serve(self.handle_client, self.host, self.port)
+        server = await websockets.serve(
+            self.handle_client, 
+            self.host, 
+            self.port
+        )
         print(f"Serveur WebSocket démarré sur ws://{self.host}:{self.port}")
         await server.wait_closed()
 
     async def stop(self):
         """
-        Close all client connections and stop the server.
+        Fonction pour fermer le serveur proprement
         """
         print("Arrêt du serveur WebSocket.")
         await asyncio.gather(*[client.close() for client in self.connected_clients])
-
 
 async def main():
     server = Server()
@@ -106,7 +120,6 @@ async def main():
     except KeyboardInterrupt:
         print("Serveur interrompu.")
         await server.stop()
-
 
 if __name__ == "__main__":
     asyncio.run(main())
