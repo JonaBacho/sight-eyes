@@ -7,14 +7,16 @@ import os
 from threading import Thread
 
 class Server:
-    def __init__(self, host="localhost", port=12346):
+    def __init__(self, host="192.168.1.179", port=12346):
         self.host = host
         self.port = port
         self.error = None
         self.connected_clients = set()
         self.tracker = None
         self.stop = False
-        self.running = True
+        self.image_path = None
+        self.target_name = None
+        self.first_communication = -1
 
     def init_tracker(self, target_name=None, image_path=None):
         try:
@@ -22,20 +24,13 @@ class Server:
                 self.tracker = ObjectTracker(source='webcam', stream_url='http://172.20.10.8', target_name=target_name)
                 return
             elif image_path:
-                self.tracker = ObjectTracker(source='stream', stream_url='http://172.20.10.8', image_path=image_path)
+                self.tracker = ObjectTracker(source='webcam', stream_url='http://172.20.10.8', image_path=image_path)
         except Exception as e:
             self.error = f"erreur lors de l'initialisation du serveur: {e}"
             print(self.error)
 
     def process_message(self, data):
         try:
-            # Handle the stop signal
-            self.stop = data.get("stop", False)
-            if self.stop:
-                self.running = False
-                return {"status": "server_stopping"}
-
-            # Handle different message types
             message_type = data.get("type")
             if message_type == "target_name":
                 self.target_name = data.get("data")
