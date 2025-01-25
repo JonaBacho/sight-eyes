@@ -5,7 +5,7 @@ import base64
 
 
 class Client:
-    def __init__(self, addressIP="localhost", port="12346"):
+    def __init__(self, addressIP="192.168.8.105", port="12346"):
         self.addressIP = addressIP
         self.port = port
         self.websocket = None
@@ -73,10 +73,10 @@ async def test_client():
         await client.connect()
 
         # Send a target name
-        await client.send(stop=False, message_type="target_name", data="example_target")
+        await client.send(stop=False, message_type="target_name", data="person")
 
         # Send an image
-        await client.send(stop=False, message_type="image", data="C:/Users/ELEONOR BJOUNKENG/Pictures/nut.png")
+        #await client.send(stop=False, message_type="image", data="C:/Users/DELL/Pictures/vroom.jpeg")
 
         # Stop the server
         #await client.send(stop=True, message_type="target_name", data="shutdown")
@@ -87,8 +87,8 @@ async def test_client():
 
     except Exception as e:
         print(f"Erreur : {e}")
-    finally:
-        await client.close()
+     #finally:
+         #await client.close()
 
 
 if __name__ == "__main__":
