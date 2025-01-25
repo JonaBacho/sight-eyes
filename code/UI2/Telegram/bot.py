@@ -182,6 +182,12 @@ def bip_signal(message: Message):
 @bot.message_handler(content_types=['text'])
 def handle_keyword(keyword_message: Message):
     global filey
+    
+    id_message = keyword_message
+    
+    if (not user_state.get(id_message.chat.id, {}).get('waiting_for_id')) and (not user_state.get(keyword_message.chat.id, {}).get('waiting_for_key')):
+        bot.send_message(id_message.chat.id, "❌ Erreur : Nous n'attendions pas un message maintenant !\nConsultez /start")
+
     if user_state.get(keyword_message.chat.id, {}).get('waiting_for_key'):
         keyword = keyword_message.text.strip()
         connection = create_connection()
@@ -219,7 +225,6 @@ def handle_keyword(keyword_message: Message):
             cursor.close()
             connection.close()
 
-    id_message = keyword_message
     if user_state.get(id_message.chat.id, {}).get('waiting_for_id'):
         selected_id = id_message.text.strip()
         connection = create_connection()
@@ -251,14 +256,26 @@ def handle_keyword(keyword_message: Message):
                         img_file,
                         caption=f"✅ Image sélectionnée !\nID: {active_image['id']}\nMot-clé: {active_image['keyword']}\nDate: {active_image['date_uploaded']}"
                     )
+                with open("active_id.txt", "w") as active_file:
+                    active_file.write(str(active_image['id']))
                 user_state[id_message.chat.id]['waiting_for_id'] = False  # Désactiver l'attente d'ID
         else:
             bot.send_message(id_message.chat.id, "❌ Aucune image trouvée avec cet ID.")
 
 
+    
 
+# Gestion des contenus inattendus
+@bot.message_handler(func=lambda message: True, content_types=['sticker', 'animation', 'video', 'voice', 'video_note', 'audio', 'document', 'contact', 'location', 'poll', 'dice', 'game', 'venue'])
+def handle_unexpected_content(message: Message):
+    bot.send_message(
+        message.chat.id,
+        "❌ Erreur : Contenu inattendu ! Seuls les messages texte et les photos sont acceptés. 😊"
+    )
+    
 
 # Lancement du bot
 if __name__ == "__main__":
+    print("🤖 Bot en cours d'exécution...")
     bot.polling()
 
