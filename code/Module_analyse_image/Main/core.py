@@ -53,6 +53,7 @@ class Core:
         """
         Démarre le suivi de l'objet.
         """
+        await self.initialize_target()
         try:
             while not self.stop_event.is_set():
                 # Recevoir les données du serveur
@@ -90,6 +91,7 @@ class Core:
         Active le bip pendant quelques secondes.
         """
         self.activate_bip = True
+        
         print("Bip activé !")
         await asyncio.sleep(5)
         self.activate_bip = False

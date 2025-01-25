@@ -116,7 +116,7 @@ def search_now(message: Message):
             core = Core(image=filey, server_address=server_address, port=port)
             core.initialize_target()
             bot.send_message(message.chat.id, f"🔍 Recherche en cours...")
-            asyncio.run(core.initialize_target())
+            #asyncio.run(core.initialize_target())
             asyncio.run(core.start_tracking())
         except Exception as e:
             bot.send_message(message.chat.id, f"❌ Erreur lors de la création de l'instance Core : {e}")

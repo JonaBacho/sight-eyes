@@ -5,7 +5,7 @@ import base64
 
 
 class Client:
-    def __init__(self, addressIP="192.168.8.105", port="12346"):
+    def __init__(self, addressIP="localhost", port="12346"):
         self.addressIP = addressIP
         self.port = port
         self.websocket = None
