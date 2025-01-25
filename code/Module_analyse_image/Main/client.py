@@ -33,11 +33,13 @@ class Client:
             # Prepare the message
             if message_type == "image":
                 # Read and encode the image as base64
-                with open(data, "rb") as img_file:
-                    encoded_image = base64.b64encode(img_file.read()).decode("utf-8")
-                payload = {"stop": stop, "type": "image", "data": encoded_image, "filename": data.split("/")[-1]}
+                encoded_image = base64.b64encode(data).decode("utf-8")
+                #payload = {"stop": stop, "type": "image", "data": encoded_image, "filename": filename or "image.jpg"}
+                payload = {"stop": False, "type": "image", "data": encoded_image}
+                
+       
             elif message_type == "target_name":
-                payload = {"stop": stop, "type": "target_name", "data": data}
+                payload = {"stop": False, "type": "target_name", "data": data}
             else:
                 raise ValueError("Invalid message type. Must be 'image' or 'target_name'.")
 
@@ -73,10 +75,10 @@ async def test_client():
         await client.connect()
 
         # Send a target name
-        await client.send(stop=False, message_type="target_name", data="example_target")
+        await client.send(stop=False, message_type="target_name", data="person")
 
         # Send an image
-        await client.send(stop=False, message_type="image", data="C:/Users/ELEONOR BJOUNKENG/Pictures/nut.png")
+        #await client.send(stop=False, message_type="image", data="C:/Users/DELL/Pictures/vroom.jpeg")
 
         # Stop the server
         #await client.send(stop=True, message_type="target_name", data="shutdown")
@@ -87,8 +89,8 @@ async def test_client():
 
     except Exception as e:
         print(f"Erreur : {e}")
-    finally:
-        await client.close()
+     #finally:
+         #await client.close()
 
 
 if __name__ == "__main__":

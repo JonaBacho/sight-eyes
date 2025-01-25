@@ -1,4 +1,5 @@
 import telebot
+import json
 import asyncio
 import mysql.connector
 from mysql.connector import Error
@@ -113,13 +114,15 @@ def search_now(message: Message):
         port = "12346"
         try:
             core = Core(image=filey, server_address=server_address, port=port)
+            core.initialize_target()
             bot.send_message(message.chat.id, f"🔍 Recherche en cours...")
+            #asyncio.run(core.initialize_target())
             asyncio.run(core.start_tracking())
         except Exception as e:
             bot.send_message(message.chat.id, f"❌ Erreur lors de la création de l'instance Core : {e}")
 
-    @bot.message_handler(content_types=['text'])
-    def handle_text(received_message: Message):
+@bot.message_handler( content_types=['text'])
+def handle_text(received_message: Message):
          # Créer une instance Core pour le target_name entré à rechercher
         server_address = "localhost" #Remplacer par l'adresse IP du serveur websocket
         port = "12346"
@@ -131,10 +134,11 @@ def search_now(message: Message):
             try:
                 core = Core(target_name=keyword, server_address=server_address, port=port)
                 bot.send_message(received_message.chat.id, f"🔍 Recherche en cours...")
+                asyncio.run(core.initialize_target())
                 asyncio.run(core.start_tracking())
             except Exception as e:
                 bot.send_message(received_message.chat.id, f"❌ Erreur lors de la création de l'instance Core : {e}")
-
+    
 
 # Commande /search
 @bot.message_handler(commands=['search'])

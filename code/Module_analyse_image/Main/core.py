@@ -1,4 +1,5 @@
 import asyncio
+import json
 from threading import Event
 from client import Client  # Assurez-vous que la classe Client est correctement importée
 
@@ -52,6 +53,7 @@ class Core:
         """
         Démarre le suivi de l'objet.
         """
+        await self.initialize_target()
         try:
             while not self.stop_event.is_set():
                 # Recevoir les données du serveur
@@ -72,7 +74,7 @@ class Core:
 
                 # Simuler la communication avec Arduino (remplacez par votre logique réelle)
                 print(f"Envoi à Arduino : Vitesse={self.current_speed}, Angle={self.servo_horizontal_angle}, "
-                      f"Trouvé={self.found}, Bip={self.activate_bip}")
+                     f"Trouvé={self.found}, Bip={self.activate_bip}")
 
                 # Simuler la réception d'une distance d'objets
                 distance = 15  # Exemple de valeur de distance
@@ -89,6 +91,7 @@ class Core:
         Active le bip pendant quelques secondes.
         """
         self.activate_bip = True
+        
         print("Bip activé !")
         await asyncio.sleep(5)
         self.activate_bip = False
