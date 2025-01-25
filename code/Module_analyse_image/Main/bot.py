@@ -114,6 +114,7 @@ def search_now(message: Message):
         port = "12346"
         try:
             core = Core(image=filey, server_address=server_address, port=port)
+            core.initialize_target()
             bot.send_message(message.chat.id, f"🔍 Recherche en cours...")
             asyncio.run(core.initialize_target())
             asyncio.run(core.start_tracking())
@@ -315,7 +316,7 @@ def handle_keyword(keyword_message: Message):
                     )
                 # Créer une instance Core pour l'image à rechercher
                 server_address = "localhost" #Remplacer par l'adresse IP du serveur websocket
-                port = "12345" #Remplacer par le port du serveur websocket
+                port = "12346" #Remplacer par le port du serveur websocket
                 try:
                     core = Core(img_file, server_address, port)
                     asyncio.run(core.start_tracking())

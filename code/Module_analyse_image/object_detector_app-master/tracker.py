@@ -48,6 +48,7 @@ class ObjectTracker:
         self.min_angle = 0
         self.max_screen_ratio = 0.8  # 80% de la taille de l'écran
         self.current_speed = 0  # Vitesse initiale
+        self.object_found = False
         #self.arduino_comm = ArduinoCommunication(port=port_arduino, baudrate=9600)
         self.stop_event = Event()
 
@@ -126,7 +127,7 @@ class ObjectTracker:
         new_servo_horizontal_angle = (self.servo_horizontal_angle + math.degrees(math.atan(coeff_horizontal))) % 360
 
         coeff_vertical = 2 * sign_vertical * abs(y_center - (frame_height / 2)) * math.tan(math.radians((sign_vertical * self.fov_vertical/2) + 90)) / frame_height
-        new_servo_vertical_angle = self.servo_vertical_angle + math.degrees(math.atan(coeff_vertical)) % 360
+        new_servo_vertical_angle = (self.servo_vertical_angle + math.degrees(math.atan(coeff_vertical))) % 360
         print(f"new_servo_horizontal_angle: {new_servo_horizontal_angle}, new_servo_vertical_angle: {new_servo_vertical_angle}")
 
         self.servo_horizontal_angle = new_servo_horizontal_angle
@@ -146,7 +147,8 @@ class ObjectTracker:
         # Vitesse décroissante
         if obj_area_ratio >= self.max_screen_ratio:
             return 0  # Arrêt du robot
-        return max(0.1, 1 - obj_area_ratio)  # Vitesse réduite en fonction de la taille
+        self.current_speed = max(0.1, 1 - obj_area_ratio)
+        return self.current_speed  # Vitesse réduite en fonction de la taille
 
     def _process_frame(self, frame):
         found = False
@@ -185,7 +187,7 @@ class ObjectTracker:
                         self.category_index, use_normalized_coordinates=True, line_thickness=8
                     )
                     break
-
+            self.object_found = found
             return frame, found
         except Exception as e:
             print(f"Erreur lors du traitement de l'image : {e}")
