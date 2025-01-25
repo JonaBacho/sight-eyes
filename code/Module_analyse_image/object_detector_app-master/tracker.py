@@ -127,7 +127,7 @@ class ObjectTracker:
         new_servo_horizontal_angle = (self.servo_horizontal_angle + math.degrees(math.atan(coeff_horizontal))) % 360
 
         coeff_vertical = 2 * sign_vertical * abs(y_center - (frame_height / 2)) * math.tan(math.radians((sign_vertical * self.fov_vertical/2) + 90)) / frame_height
-        new_servo_vertical_angle = self.servo_vertical_angle + math.degrees(math.atan(coeff_vertical)) % 360
+        new_servo_vertical_angle = (self.servo_vertical_angle + math.degrees(math.atan(coeff_vertical))) % 360
         print(f"new_servo_horizontal_angle: {new_servo_horizontal_angle}, new_servo_vertical_angle: {new_servo_vertical_angle}")
 
         self.servo_horizontal_angle = new_servo_horizontal_angle
