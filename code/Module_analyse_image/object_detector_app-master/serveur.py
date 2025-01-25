@@ -7,7 +7,7 @@ import os
 from threading import Thread
 
 class Server:
-    def __init__(self, host="192.168.8.105", port=12346):
+    def __init__(self, host="192.168.1.179", port=12346):
         self.host = host
         self.port = port
         self.error = None
@@ -21,10 +21,10 @@ class Server:
     def init_tracker(self, target_name=None, image_path=None):
         try:
             if target_name:
-                self.tracker = ObjectTracker(source='stream', stream_url='http://172.20.10.8', target_name=target_name)
+                self.tracker = ObjectTracker(source='webcam', stream_url='http://172.20.10.8', target_name=target_name)
                 return
             elif image_path:
-                self.tracker = ObjectTracker(source='stream', stream_url='http://172.20.10.8', image_path=image_path)
+                self.tracker = ObjectTracker(source='webcam', stream_url='http://172.20.10.8', image_path=image_path)
         except Exception as e:
             self.error = f"erreur lors de l'initialisation du serveur: {e}"
             print(self.error)
