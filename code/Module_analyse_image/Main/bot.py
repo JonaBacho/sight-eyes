@@ -110,7 +110,7 @@ def search_now(message: Message):
         filey = file.content
         
         # Créer une instance Core pour l'image à rechercher
-        server_address = "localhost" #Remplacer par l'adresse IP du serveur websocket
+        server_address = "192.168.8.105" #Remplacer par l'adresse IP du serveur websocket
         port = "12346"
         try:
             core = Core(image=filey, server_address=server_address, port=port)
@@ -315,7 +315,7 @@ def handle_keyword(keyword_message: Message):
                         caption=f"✅ Image sélectionnée !\nID: {active_image['id']}\nMot-clé: {active_image['keyword']}\nDate: {active_image['date_uploaded']}"
                     )
                 # Créer une instance Core pour l'image à rechercher
-                server_address = "localhost" #Remplacer par l'adresse IP du serveur websocket
+                server_address = "192.168.8.105" #Remplacer par l'adresse IP du serveur websocket
                 port = "12346" #Remplacer par le port du serveur websocket
                 try:
                     core = Core(img_file, server_address, port)
