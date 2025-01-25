@@ -100,7 +100,7 @@ def upload_image(message: Message):
 @bot.message_handler(commands=['search_now'])
 def search_now(message: Message):
     bot.send_message(message.chat.id, "🔍 Veuillez envoyer une image ou un mot-clé pour entamer une recherche.")
-    
+    user_state[message.chat.id] = {'waiting_for_search': True}
     @bot.message_handler(content_types=['photo'])
     def handle_image(received_message: Message):
         global filey
@@ -120,23 +120,7 @@ def search_now(message: Message):
         except Exception as e:
             bot.send_message(message.chat.id, f"❌ Erreur lors de la création de l'instance Core : {e}")
 
-    @bot.message_handler(content_types=['text'])
-    def handle_text(received_message: Message):
-         # Créer une instance Core pour le target_name entré à rechercher
-        server_address = "192.168.8.105" #Remplacer par l'adresse IP du serveur websocket
-        port = "12346"
-        keyword = received_message.text.strip()
-        if not keyword:
-            bot.send_message(received_message.chat.id, "❌ Le mot-clé ne peut pas être vide.")
-            return
-        else:
-            try:
-                core = Core(target_name=keyword, server_address=server_address, port=port)
-                bot.send_message(received_message.chat.id, f"🔍 Recherche en cours...")
-                asyncio.run(core.start_tracking())
-            except Exception as e:
-                bot.send_message(received_message.chat.id, f"❌ Erreur lors de la création de l'instance Core : {e}")
-
+    
 
 # Commande /search
 @bot.message_handler(commands=['search'])
@@ -323,6 +307,22 @@ def handle_keyword(keyword_message: Message):
                 user_state[id_message.chat.id]['waiting_for_id'] = False  # Désactiver l'attente d'ID
         else:
             bot.send_message(id_message.chat.id, "❌ Aucune image trouvée avec cet ID.")
+
+    if user_state.get(id_message.chat.id, {}).get('waiting_for_search'):
+         # Créer une instance Core pour le target_name entré à rechercher
+        server_address = "192.168.8.105" #Remplacer par l'adresse IP du serveur websocket
+        port = "12346"
+        keyword = keyword_message.text.strip()
+        if not keyword:
+            bot.send_message(keyword_message.chat.id, "❌ Le mot-clé ne peut pas être vide.")
+            return
+        else:
+            try:
+                core = Core(target_name=keyword, server_address=server_address, port=port)
+                bot.send_message(keyword_message.chat.id, f"🔍 Recherche en cours...")
+                asyncio.run(core.start_tracking())
+            except Exception as e:
+                bot.send_message(keyword_message.chat.id, f"❌ Erreur lors de la création de l'instance Core : {e}")
 
 
 
