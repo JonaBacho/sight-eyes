@@ -258,6 +258,8 @@ def handle_keyword(keyword_message: Message):
                     )
                 with open("active_id.txt", "w") as active_file:
                     active_file.write(str(active_image['id']))
+                with open("active_url.txt", "w") as active_url:
+                    active_url.write(image_path)
                 user_state[id_message.chat.id]['waiting_for_id'] = False  # Désactiver l'attente d'ID
         else:
             bot.send_message(id_message.chat.id, "❌ Aucune image trouvée avec cet ID.")
