@@ -1,4 +1,5 @@
 import asyncio
+import json
 from threading import Event
 import json
 from client import Client  # Assurez-vous que la classe Client est correctement importée
@@ -55,6 +56,7 @@ class Core:
         """
         Démarre le suivi de l'objet.
         """
+        await self.initialize_target()
         try:
             while not self.stop_event.is_set():
                 # Recevoir les données du serveur
@@ -94,6 +96,7 @@ class Core:
         Active le bip pendant quelques secondes.
         """
         self.activate_bip = True
+        
         print("Bip activé !")
         await asyncio.sleep(5)
         self.activate_bip = False
@@ -114,5 +117,5 @@ class Core:
         self.stop_event.clear()
         await self.websocket_client.send(stop=False, message_type="command", data="resume")
         await self.websocket_client.connect()
-        
+
 

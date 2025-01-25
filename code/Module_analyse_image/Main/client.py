@@ -5,7 +5,7 @@ import base64
 
 
 class Client:
-    def __init__(self, addressIP="192.168.8.105", port="12346"):
+    def __init__(self, addressIP="localhost", port="12346"):
         self.addressIP = addressIP
         self.port = port
         self.websocket = None
@@ -33,11 +33,13 @@ class Client:
             # Prepare the message
             if message_type == "image":
                 # Read and encode the image as base64
-                with open(data, "rb") as img_file:
-                    encoded_image = base64.b64encode(img_file.read()).decode("utf-8")
-                payload = {"stop": stop, "type": "image", "data": encoded_image, "filename": data.split("/")[-1]}
+                encoded_image = base64.b64encode(data).decode("utf-8")
+                #payload = {"stop": stop, "type": "image", "data": encoded_image, "filename": filename or "image.jpg"}
+                payload = {"stop": False, "type": "image", "data": encoded_image}
+                
+       
             elif message_type == "target_name":
-                payload = {"stop": stop, "type": "target_name", "data": data}
+                payload = {"stop": False, "type": "target_name", "data": data}
             else:
                 raise ValueError("Invalid message type. Must be 'image' or 'target_name'.")
 
