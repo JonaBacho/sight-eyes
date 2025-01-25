@@ -1,4 +1,5 @@
 import asyncio
+import json
 from threading import Event
 from client import Client  # Assurez-vous que la classe Client est correctement importée
 
@@ -72,7 +73,7 @@ class Core:
 
                 # Simuler la communication avec Arduino (remplacez par votre logique réelle)
                 print(f"Envoi à Arduino : Vitesse={self.current_speed}, Angle={self.servo_horizontal_angle}, "
-                      f"Trouvé={self.found}, Bip={self.activate_bip}")
+                     f"Trouvé={self.found}, Bip={self.activate_bip}")
 
                 # Simuler la réception d'une distance d'objets
                 distance = 15  # Exemple de valeur de distance

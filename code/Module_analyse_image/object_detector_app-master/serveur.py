@@ -14,6 +14,7 @@ class Server:
         self.connected_clients = set()
         self.tracker = None
         self.stop = False
+        self.running = True
 
     def init_tracker(self):
         try:
@@ -32,7 +33,7 @@ class Server:
         try:
             # Handle the stop signal
             self.stop = data.get("stop", False)
-            if stop:
+            if self.stop:
                 self.running = False
                 return {"status": "server_stopping"}
 
