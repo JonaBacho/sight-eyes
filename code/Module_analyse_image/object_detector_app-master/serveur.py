@@ -39,7 +39,7 @@ class Server:
             self.stop = data.get("stop")
             message_type = data.get("message_type")
             if message_type == "target_name":
-                self.target_name = data.get("data")
+                self.target_name = data.get("data").lower()
 
             elif message_type == "image":
                 encoded_image = data.get("data")
