@@ -1,5 +1,5 @@
 import asyncio
-import websockets
+from websockets.sync.client import connect
 import json
 import base64
 
@@ -10,15 +10,14 @@ class Client:
         self.port = port
         self.websocket = None
 
-    async def connect(self):
+    def connect(self):
         try:
-            self.websocket = await websockets.connect(f"ws://{self.addressIP}:{self.port}")
+            self.websocket = connect(f"ws://{self.addressIP}:{self.port}")
             print(f"Connexion établie avec ws://{self.addressIP}:{self.port}")
         except Exception as e:
-            print(f"Erreur de connexion : {e}")
-            raise
+            raise RuntimeError(f"Erreur de connexion : {e}")
 
-    async def send(self, stop, message_type, data):
+    def send(self, stop, message_type, data):
         """
         Send a message to the server.
 
@@ -28,7 +27,7 @@ class Client:
         """
         try:
             if self.websocket is None:
-                await self.connect()
+                self.connect()
 
             # Prepare the message
             if message_type == "image":
@@ -44,38 +43,38 @@ class Client:
                 raise ValueError("Invalid message type. Must be 'image' or 'target_name'.")
 
             # Send the JSON message
-            await self.websocket.send(json.dumps(payload))
+            self.websocket.send(json.dumps(payload))
             print(f"Message envoyé : {payload}")
         except Exception as e:
-            print(f"Erreur lors de l'envoi : {e}")
-            raise
+            raise RuntimeError(f"Erreur de l'envoi : {e}")
 
-    async def receive(self):
+    def receive(self):
         try:
             if self.websocket:
-                message = await self.websocket.recv()
+                message = self.websocket.recv()
                 print(f"Message reçu : {message}")
                 return message
         except Exception as e:
             print(f"Erreur lors de la réception : {e}")
             raise
 
-    async def close(self):
+    def close(self):
         if self.websocket:
-            await self.websocket.close()
+            self.websocket.close()
+            self.websocket = None
             print("Connexion fermée")
 
 
-async def test_client():
+def test_client():
     """
     Test the client by sending a target name and an image.
     """
     client = Client()
     try:
-        await client.connect()
+        client.connect()
 
         # Send a target name
-        await client.send(stop=False, message_type="target_name", data="person")
+        client.send(stop=False, message_type="target_name", data="person")
 
         # Send an image
         #await client.send(stop=False, message_type="image", data="C:/Users/DELL/Pictures/vroom.jpeg")
@@ -84,7 +83,7 @@ async def test_client():
         #await client.send(stop=True, message_type="target_name", data="shutdown")
 
         # Receive a response from the server
-        response = await client.receive()
+        response = client.receive()
         print(f"Réponse du serveur : {response}")
 
     except Exception as e:
@@ -94,4 +93,4 @@ async def test_client():
 
 
 if __name__ == "__main__":
-    asyncio.run(test_client())
+    test_client()

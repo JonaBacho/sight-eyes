@@ -4,19 +4,24 @@ import json
 from tracker import ObjectTracker
 import base64
 import os
-from threading import Thread
+import threading
+import time
+from websockets.sync.server import serve
+from websockets.exceptions import ConnectionClosedError
 
 class Server:
     def __init__(self, host="192.168.1.179", port=12346):
         self.host = host
         self.port = port
         self.error = None
-        self.connected_clients = set()
+        #self.connected_clients = set()
         self.tracker = None
-        self.stop = False
+        self.stop = True
+        self.send_running = False
         self.image_path = None
         self.target_name = None
-        self.first_communication = -1
+        self.loop_thread = None
+        self.send_thread = None
 
     def init_tracker(self, target_name=None, image_path=None):
         try:
@@ -31,7 +36,8 @@ class Server:
 
     def process_message(self, data):
         try:
-            message_type = data.get("type")
+            self.stop = data.get("stop")
+            message_type = data.get("message_type")
             if message_type == "target_name":
                 self.target_name = data.get("data")
 
@@ -50,50 +56,77 @@ class Server:
                 else:
                     self.error = "Missing image data"
 
-            self.stop = data.get("stop", False)
-            if not self.stop:
-                if self.first_communication == -1:
-                    self.init_tracker(self.target_name, self.image_path)
-                    self.first_communication = 1
-                    Thread(target=self.tracker.start_tracking).start()
-
-            self.error = "Unknown message type"
+            else:
+                self.error = "Unknown message type"
         except Exception as e:
             self.error = f"Internal server error: {str(e)}"
 
-    async def handle_client(self, websocket, path=None):
-        self.connected_clients.add(websocket)
-        try:
-            async for message in websocket:
-                try:
-                    data = json.loads(message)
-                    print(f"Message reçu : {data}")
+    def send_attributes(self, websocket):
+        """
+        Méthode exécutée dans un thread séparé pour envoyer les attributs au client.
+        """
+        while self.send_running:
+            try:
+                # Envoyer l'attribut de l'objet A au client toutes les 500 ms
+                print(self.tracker)
+                response_data = {
+                    'speed': float(self.tracker.current_speed),
+                    'horizontal_angle': float(self.tracker.servo_horizontal_angle),
+                    'object_found': self.tracker.object_found
+                }
+                response = {
+                    'data': response_data,
+                    'error': self.error
+                }
+                print("message pret")
+                websocket.send(json.dumps(response))
+                print("envoyé")
+                time.sleep(0.5)
 
-                    self.process_message(data)
-                    response_data = {
-                        'speed': self.tracker.current_speed,
-                        'horizontal_angle': self.tracker.servo_horizontal_angle,
-                        'object_found': self.tracker.object_found
-                    }
-                    response = {
-                        'data': response_data,
-                        'error': self.error
-                    }
-                    await websocket.send(json.dumps(response))
+            except json.JSONDecodeError:
+                error_response = {"error": "Invalid JSON format"}
+                websocket.send(json.dumps(error_response))
+            except ConnectionClosedError:
+                print("Client déconnecté pendant l'envoi des attributs")
+                break
+            except Exception as e:
+                print(f"Erreur lors de l'envoi des attributs : {e}")
+                break
 
-                except json.JSONDecodeError:
-                    error_response = {"error": "Invalid JSON format"}
-                    await websocket.send(json.dumps(error_response))
-                except Exception as e:
-                    print(f"Erreur de traitement du message : {e}")
-                    await websocket.send(json.dumps({"error": "Internal server error"}))
+    def handle_client(self, websocket, path=None):
+        while True:
+            # Attendre un message du client
+            message = websocket.recv()
+            data = json.loads(message)
+            print(f"Message reçu du client : {data}")
 
-        except websockets.exceptions.ConnectionClosed as e:
-            print(f"Connexion fermée : {e}")
-        except Exception as e:
-            print(f"Erreur inattendue : {e}")
-        finally:
-            self.connected_clients.remove(websocket)
+            self.process_message(data)
+            print("process message finished !")
+            print(self.stop)
+            if not self.stop and self.tracker is None:
+                self.init_tracker(self.target_name, self.image_path)
+                self.loop_thread = threading.Thread(target=self.tracker.start_tracking)
+                self.loop_thread.start()
+                time.sleep(5) # on attends deux secondes le temps que le model se lance effectivement
+
+                print("Boucle infinie démarrée")
+                print(self.tracker)
+                # Démarrer l'envoi des attributs dans un thread séparé
+                self.send_running = True
+                self.send_thread = threading.Thread(target=self.send_attributes, args=(websocket,))
+                self.send_thread.start()
+
+            elif self.stop and self.tracker is not None:
+                # Arrêter la boucle infinie si elle est active
+                print("fin")
+                self.tracker.stop_tracking()
+                self.send_running = False  # Arrêter le thread d'envoi
+                self.send_thread.join()  # Attendre que le thread d'envoi se termine
+                self.loop_thread.join()  # Attendre que la boucle infinie se termine
+                self.tracker = None
+                self.loop_thread = None
+                print("Boucle infinie arrêtée")
+
 
     async def broadcast_updates(self):
         """
@@ -113,12 +146,10 @@ class Server:
                 await asyncio.gather(*[client.send(json.dumps(message)) for client in self.connected_clients])
             await asyncio.sleep(0.5)  # Pause de 500 ms
 
-    async def start(self):
-        broadcast_task = asyncio.create_task(self.broadcast_updates())
-        server = await websockets.serve(self.handle_client, self.host, self.port)
-        print(f"Serveur WebSocket démarré sur ws://{self.host}:{self.port}")
-        await server.wait_closed()
-        broadcast_task.cancel()  # Annule la tâche de diffusion périodique
+    def start(self):
+        with serve(self.handle_client, self.host, self.port) as server:
+            print(f"Serveur WebSocket démarré sur ws://{self.host}:{self.port}")
+            server.serve_forever()
 
     async def stop(self):
         """
@@ -129,13 +160,6 @@ class Server:
         await asyncio.gather(*[client.close() for client in self.connected_clients])
 
 
-async def main():
-    server = Server()
-    try:
-        await server.start()
-    except KeyboardInterrupt:
-        print("Serveur interrompu.")
-        await server.stop()
-
 if __name__ == "__main__":
-    asyncio.run(main())
+    server = Server(host="192.168.8.105")
+    server.start()

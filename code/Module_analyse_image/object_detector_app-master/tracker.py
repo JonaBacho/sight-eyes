@@ -49,8 +49,8 @@ class ObjectTracker:
         self.max_screen_ratio = 0.8  # 80% de la taille de l'écran
         self.current_speed = 0  # Vitesse initiale
         self.object_found = False
+        self.running = False
         #self.arduino_comm = ArduinoCommunication(port=port_arduino, baudrate=9600)
-        self.stop_event = Event()
 
         # Identifie l'objet cible
         try:
@@ -59,7 +59,7 @@ class ObjectTracker:
             elif self.target_name:
                 self.target_id = self._get_target_id_by_name()
         except Exception as e:
-            print(f"Erreur lors de l'identification de l'objet cible : {e}")
+            raise RuntimeError(f"Erreur lors de l'identification de l'objet cible : {e}")
 
     def reset_event(self):
         self.stop_event = Event()
@@ -119,7 +119,7 @@ class ObjectTracker:
         ymin, xmin, ymax, xmax = box
         x_center = (xmin + xmax) / 2
         y_center = (ymin + ymax) / 2
-        print(f"x_center: {x_center}, y_center: {y_center}")
+        #print(f"x_center: {x_center}, y_center: {y_center}")
         sign_horizontal = sign(x_center - (frame_width / 2))
         sign_vertical = sign(y_center - (frame_height / 2))
 
@@ -128,7 +128,7 @@ class ObjectTracker:
 
         coeff_vertical = 2 * sign_vertical * abs(y_center - (frame_height / 2)) * math.tan(math.radians((sign_vertical * self.fov_vertical/2) + 90)) / frame_height
         new_servo_vertical_angle = (self.servo_vertical_angle + math.degrees(math.atan(coeff_vertical))) % 360
-        print(f"new_servo_horizontal_angle: {new_servo_horizontal_angle}, new_servo_vertical_angle: {new_servo_vertical_angle}")
+        #print(f"new_servo_horizontal_angle: {new_servo_horizontal_angle}, new_servo_vertical_angle: {new_servo_vertical_angle}")
 
         self.servo_horizontal_angle = new_servo_horizontal_angle
         self.servo_vertical_angle = new_servo_vertical_angle
@@ -181,7 +181,7 @@ class ObjectTracker:
                     speed = self._calculate_speed(box, frame_width, frame_height)
                     is_close = True if speed == 0 else False
                     #self.arduino_comm.send_data(horizontal_angle, vertical_angle, speed, is_close)  # envoi à l'arduino
-                    print(f"Angles: Horizontal={horizontal_angle:.2f}, Vertical={vertical_angle:.2f}")
+                    #print(f"Angles: Horizontal={horizontal_angle:.2f}, Vertical={vertical_angle:.2f}")
                     vis_util.visualize_boxes_and_labels_on_image_array(
                         frame, np.expand_dims(box, axis=0), np.array([class_id]), np.array([np.squeeze(scores)[i]]),
                         self.category_index, use_normalized_coordinates=True, line_thickness=8
@@ -194,7 +194,7 @@ class ObjectTracker:
             return frame, found
 
     def stop_tracking(self):
-        self.stop_event.set()
+        self.running = False
 
     def start_tracking(self):
         """Démarre le suivi de l'objet à partir de la source vidéo."""
@@ -209,7 +209,8 @@ class ObjectTracker:
                 raise ValueError("Source vidéo non valide.")
 
             fps = FPS().start()
-            while not self.stop_event.is_set():
+            self.running = True
+            while self.running:
                 frame = video_capture.read()
                 frame, found = self._process_frame(frame)
 
@@ -218,10 +219,12 @@ class ObjectTracker:
                     print("Object not found")
 
                 #distance = self.arduino_comm.receive_distance()
+                """
                 distance = 100
                 if distance and distance < 10:  # Ex. seuil pour l'arrêt
                     self.stop_event.set()
                     break
+                """
 
                 cv2.imshow('Object Tracker', frame)
                 fps.update()
