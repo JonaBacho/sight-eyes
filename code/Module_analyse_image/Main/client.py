@@ -35,11 +35,11 @@ class Client:
                 # Read and encode the image as base64
                 encoded_image = base64.b64encode(data).decode("utf-8")
                 #payload = {"stop": stop, "type": "image", "data": encoded_image, "filename": filename or "image.jpg"}
-                payload = {"stop": False, "type": "image", "data": encoded_image}
+                payload = {"stop": False, "message_type": "image", "data": encoded_image}
                 
        
             elif message_type == "target_name":
-                payload = {"stop": False, "type": "target_name", "data": data}
+                payload = {"stop": False, "message_type": "target_name", "data": data}
             else:
                 raise ValueError("Invalid message type. Must be 'image' or 'target_name'.")
 

@@ -35,7 +35,7 @@ def get_program_pid():
             pid = int(pid_file.read().strip())
         return pid
     except FileNotFoundError:
-        print("❌ Le fichier program_pid.txt n'a pas été trouvé.")
+        #print("❌ Le fichier program_pid.txt n'a pas été trouvé.")
         return None
     except ValueError:
         print("❌ Le contenu de program_pid.txt n'est pas un PID valide.")
@@ -75,6 +75,7 @@ def send_welcome(message: Message):
         "\n💡 Utilisez ces commandes pour interagir avec le système."
     )
     bot.send_message(message.chat.id, help_text)
+    print(f"👋 Utilisateur {message.from_user.username} a utilisé la commande /start")
 
 # Commande /upload
 @bot.message_handler(commands=['upload'])
@@ -114,7 +115,7 @@ def search_now(message: Message):
         port = "12346"
         try:
             core = Core(image=filey, server_address=server_address, port=port)
-            core.initialize_target()
+            #core.initialize_target()
             bot.send_message(message.chat.id, f"🔍 Recherche en cours...")
             #asyncio.run(core.initialize_target())
             asyncio.run(core.start_tracking())
@@ -320,6 +321,7 @@ def handle_keyword(keyword_message: Message):
         else:
             try:
                 core = Core(target_name=keyword, server_address=server_address, port=port)
+                user_state[keyword_message.chat.id] = {'waiting_for_search': False}
                 bot.send_message(keyword_message.chat.id, f"🔍 Recherche en cours...")
                 asyncio.run(core.start_tracking())
             except Exception as e:
