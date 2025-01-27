@@ -2,10 +2,12 @@
 import json
 import time
 from threading import Event
+import json
 from client import Client  # Assurez-vous que la classe Client est correctement importée
+from arduino import ArduinoCommunication
 
 class Core:
-    def __init__(self, image=None, target_name=None, server_address="localhost", port="12345"):
+    def __init__(self, image=None, target_name=None, server_address="localhost", port="12345", arduino_port="/dev/ttyACM0", arduino_baudrate=9600):
         """
         Initialise le tracker d'objets.
 
@@ -19,6 +21,7 @@ class Core:
         self.port = port
 
         # Initialisation des variables
+        self.arduino = ArduinoCommunication(port=arduino_port, baudrate=arduino_baudrate)
         self.activate_bip = False
         self.found = False
         self.servo_horizontal_angle = 90
@@ -75,10 +78,12 @@ class Core:
 
                 # Simuler la communication avec Arduino (remplacez par votre logique réelle)
                 print(f"Envoi à Arduino : Vitesse={self.current_speed}, Angle={self.servo_horizontal_angle}, "
-                     f"Trouvé={self.found}, Bip={self.activate_bip}")
+                      f"Trouvé={self.found}, Bip={self.activate_bip}")
+                self.arduino.send_data(speed=self.current_speed, angle=self.servo_horizontal_angle,
+                                       obstacle=not self.found, active=not self.stop_event.is_set(), activate_bip=self.activate_bip)
 
                 # Simuler la réception d'une distance d'objets
-                distance = 15  # Exemple de valeur de distance
+                distance = self.arduino.receive_distance()  # Exemple de valeur de distance
                 if self.found and distance < 10:  # Seuil pour l'arrêt
                     self.stop_event.set()
                     self.bip()
@@ -105,4 +110,13 @@ class Core:
         self.stop_event.set()
         self.websocket_client.send(stop=True, message_type="command", data="stop")
         self.websocket_client.close()
+
+    async def resume_tracking(self):
+        """
+        Reprend une recherche mise en pause
+        """
+        self.stop_event.clear()
+        await self.websocket_client.send(stop=False, message_type="command", data="resume")
+        await self.websocket_client.connect()
+
 
