@@ -99,9 +99,6 @@ class Core:
         self.activate_bip = True
         
         print("Bip activé !")
-        time.sleep(5)
-        self.activate_bip = False
-        print("Bip désactivé.")
 
     def stop_tracking(self):
         """
