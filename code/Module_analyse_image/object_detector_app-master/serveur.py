@@ -107,7 +107,7 @@ class Server:
                 self.init_tracker(self.target_name, self.image_path)
                 self.loop_thread = threading.Thread(target=self.tracker.start_tracking)
                 self.loop_thread.start()
-                time.sleep(5) # on attends deux secondes le temps que le model se lance effectivement
+                time.sleep(8) # on attends deux secondes le temps que le model se lance effectivement
 
                 print("Boucle infinie démarrée")
                 print(self.tracker)
@@ -161,5 +161,5 @@ class Server:
 
 
 if __name__ == "__main__":
-    server = Server(host="192.168.8.105")
+    server = Server(host="172.20.10.3")
     server.start()

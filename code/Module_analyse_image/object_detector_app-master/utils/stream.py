@@ -20,6 +20,7 @@ class ESP32VideoStream:
         self.height = height
         self.stream.set(cv2.CAP_PROP_FRAME_WIDTH, width)
         self.stream.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
+        self.thread = None
 
         self.stopped = False
         self.grabbed, self.frame = self.stream.read()
@@ -31,8 +32,8 @@ class ESP32VideoStream:
         """
         Démarre un thread séparé pour lire les frames en continu.
         """
-        Thread(target=self.update, args=()).start()
-        return self
+        self.thread = Thread(target=self.update, args=()).start()
+        return self.thread
 
     def update(self):
         """
@@ -54,6 +55,7 @@ class ESP32VideoStream:
         Arrête le thread et libère les ressources.
         """
         self.stopped = True
+        self.thread.join()
         self.stream.release()
 
     def set_resolution(self, index):

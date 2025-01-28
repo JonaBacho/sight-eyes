@@ -130,10 +130,10 @@ class ObjectTracker:
         new_servo_vertical_angle = (self.servo_vertical_angle + math.degrees(math.atan(coeff_vertical))) % 360
         #print(f"new_servo_horizontal_angle: {new_servo_horizontal_angle}, new_servo_vertical_angle: {new_servo_vertical_angle}")
 
-        self.servo_horizontal_angle = new_servo_horizontal_angle
-        self.servo_vertical_angle = new_servo_vertical_angle
-        #self.servo_horizontal_angle = max(self.min_angle, min(self.max_angle, new_servo_horizontal_angle))
-        #self.servo_vertical_angle = max(self.min_angle, min(self.max_angle, new_servo_vertical_angle))
+        #self.servo_horizontal_angle = new_servo_horizontal_angle
+        #self.servo_vertical_angle = new_servo_vertical_angle
+        self.servo_horizontal_angle = max(self.min_angle, min(self.max_angle, int(new_servo_horizontal_angle)))
+        self.servo_vertical_angle = max(self.min_angle, min(self.max_angle, int(new_servo_vertical_angle)))
 
         return self.servo_horizontal_angle, self.servo_vertical_angle
 
