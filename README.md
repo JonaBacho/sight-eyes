@@ -24,7 +24,7 @@
     - [Module 4 : Interface utilisateur](#module-4--interfaces-utilisateur)  
 5.  [Déploiement et Utilisation](#déploiement-et-utilisation)  
 6. [Problèmes Connus et Résolution](#problèmes-connus-et-résolution)  
-7. [Contribution](#contribution)  
+7. [Contribution](#contributeurs)  
 8. [Licence](#licence)  
 
 ---
@@ -122,11 +122,32 @@ Cette section n'est pas encore disponible, elle le sera une fois le projet termi
 
 ---
 
-### Contribution
-Vous êtes les bienvenus pour contribuer à ce projet !  
-Si vous etes interessez, contactez notre enseignant:  
 
-📄 **Lien vers le guide de contribution :** [email de l'enseignant](www.####)  
+### Contributeurs
+
+Ce projet a été possible grâce à la collaboration et aux efforts de nombreuses personnes. Un grand merci à tous les contributeurs :  
+
+### Enseignants
+
+- **Dr. CHANA Anne Marie**
+- **Dr NGOUNOU Guy Merin**
+
+
+### Etudiants
+
+- **NDJOUNKENG ELEONOR** ([eleonor2004](https://github.com/eleonor2004)) : Développement de l'interface utilisateur.  
+- **NGAH NDONGO ESTELLE** ([estelleNdongo](https://github.com/estelleNdongo)) : Conception du châssis et intégration des capteurs.  
+- **FOMEKONG JONATHAN BACHELARD** ([JonaBacho](https://github.com/https://github.com/JonaBacho)) : Développement de l'algorithme d'analyse d'image.  
+- **NOMO GABRIEL JUNIOR** ([NOMO-Gabriel](https://github.com/NOMO-Gabriel)) : Documentation et gestion de projet.  
+- **ATABONG EFON STEPHANE** ([atabong45](https://github.com/atabong45)) : Développement de l'interface utilisateur.  
+- **NGO BASSOM ANNE ROSALIE** ([Ngo-Bassom-Anne-Rosa](https://github.com/Ngo-Bassom-Anne-Rosa)) : Conception du châssis et intégration des capteurs.  
+- **MBOCK JEAN DANIEL** ([jedanmbock](https://github.com/jedanmbock)) : Développement de l'algorithme d'analyse d'image.  
+- **NGOUPAYE THIERRY** ([ThierryNgoupaye](https://github.com/ThierryNgoupaye)) : Documentation et gestion de projet.  
+- **NGHOGHE  Franck** ([ShiningFra](https://github.com/PseudoGitHub1)) : Développement de l'interface utilisateur.  
+- **WANDJI EMMANUEL** ([leg234](https://github.com/leg234)) : Conception du châssis et intégration des capteurs.  
+ 
+
+📄 **Lien vers le guide de contribution :** [email de l'enseignant](anne.chana@univ-yaounde1.cm)  
 
 ---
 
