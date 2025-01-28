@@ -137,17 +137,17 @@ Ce projet a été possible grâce à la collaboration et aux efforts de nombreus
 
 - **NDJOUNKENG ELEONOR** ([eleonor2004](https://github.com/eleonor2004)) : Développement de l'interface utilisateur.  
 - **NGAH NDONGO ESTELLE** ([estelleNdongo](https://github.com/estelleNdongo)) : Conception du châssis et intégration des capteurs.  
-- **FOMEKONG JONATHAN BACHELARD** ([JonaBacho](https://github.com/https://github.com/JonaBacho)) : Développement de l'algorithme d'analyse d'image.  
+- **FOMEKONG JONATHAN BACHELARD** ([JonaBacho](https://github.com/JonaBacho)) : Développement de l'algorithme d'analyse d'image.  
 - **NOMO GABRIEL JUNIOR** ([NOMO-Gabriel](https://github.com/NOMO-Gabriel)) : Documentation et gestion de projet.  
 - **ATABONG EFON STEPHANE** ([atabong45](https://github.com/atabong45)) : Développement de l'interface utilisateur.  
 - **NGO BASSOM ANNE ROSALIE** ([Ngo-Bassom-Anne-Rosa](https://github.com/Ngo-Bassom-Anne-Rosa)) : Conception du châssis et intégration des capteurs.  
 - **MBOCK JEAN DANIEL** ([jedanmbock](https://github.com/jedanmbock)) : Développement de l'algorithme d'analyse d'image.  
 - **NGOUPAYE THIERRY** ([ThierryNgoupaye](https://github.com/ThierryNgoupaye)) : Documentation et gestion de projet.  
-- **NGHOGHE  Franck** ([ShiningFra](https://github.com/PseudoGitHub1)) : Développement de l'interface utilisateur.  
+- **NGHOGHE  Franck** ([ShiningFra](https://github.com/[ShiningFra)) : Développement de l'interface utilisateur.  
 - **WANDJI EMMANUEL** ([leg234](https://github.com/leg234)) : Conception du châssis et intégration des capteurs.  
  
 
-📄 **Lien vers le guide de contribution :** [email de l'enseignant](anne.chana@univ-yaounde1.cm)  
+📄 **Lien vers le guide de contribution :** [email de l'enseignant](www.anne.chana@univ-yaounde1.cm)  
 
 ---
 
