@@ -147,7 +147,7 @@ Ce projet a été possible grâce à la collaboration et aux efforts de nombreus
 - **WANDJI EMMANUEL** ([leg234](https://github.com/leg234)) : Conception du châssis et intégration des capteurs.  
  
 
-📄 **Lien vers le guide de contribution :** [email de l'enseignant](www.anne.chana@univ-yaounde1.cm)  
+📄 **Lien vers le guide de contribution :**[email de l'enseignant](mailto:anne.chana@univ-yaounde1.cm)  
 
 ---
 
