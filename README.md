@@ -24,7 +24,7 @@
     - [Module 4 : Interface utilisateur](#module-4--interfaces-utilisateur)  
 5.  [Déploiement et Utilisation](#déploiement-et-utilisation)  
 6. [Problèmes Connus et Résolution](#problèmes-connus-et-résolution)  
-7. [Contribution](#contributeurs)  
+7. [Contributions](#contributeurs)  
 8. [Licence](#licence)  
 
 ---
