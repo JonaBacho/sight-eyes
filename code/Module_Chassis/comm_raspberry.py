@@ -38,7 +38,7 @@ def read_from_arduino():
 # Main execution
 if __name__ == "__main__":
     # Check for correct number of arguments
-    if len(sys.argv) != 4:
+    if len(sys.argv) != 6:
         print("Usage: python send_data.py <speed> <angle> <si_obstacle> <si_actif> <si_sonner>")
         print("Example: python send_data.py 50 90 1 0 1")
         sys.exit(1)

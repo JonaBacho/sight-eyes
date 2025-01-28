@@ -19,15 +19,16 @@ bool si_obstacle;
 bool si_actif;
 bool si_sonner;
 bool si_scanner = 0;
+int dodge_strategy = 0;
 
-bool interruption_en_cours = false; 						// Indique si on gère l'interruption
+bool interruption_en_cours = false;             // Indique si on gère l'interruption
 long distance = 0 ;
-										//AF_DCMotor moteur(4); 
-										//moteur.setSpeed(i);
-										//moteur.run(BACKWARD);
-										//moteur.run(FORWARD); 
-										//myservo.attach(10);
-										//myservo.write(pos);
+                    //AF_DCMotor moteur(4); 
+                    //moteur.setSpeed(i);
+                    //moteur.run(BACKWARD);
+                    //moteur.run(FORWARD); 
+                    //myservo.attach(10);
+                    //myservo.write(pos);
 void setup() {
   pinMode(buzzer,OUTPUT);
   pinMode(led, OUTPUT);
@@ -37,32 +38,32 @@ void setup() {
 }
 
 void parseCommand(String command) {
-  										// Séparer la commande en parties
+                      // Séparer la commande en parties
   int firstComma = command.indexOf(',');
   int secondComma = command.indexOf(',', firstComma + 1);
   int thirdComma = command.indexOf(',', secondComma + 1);
   int fourthComma = command.indexOf(',', thirdComma + 1);
 
-  										// Vérifier que la commande contient bien 5 parties
+                      // Vérifier que la commande contient bien 5 parties
   if (firstComma != -1 && secondComma != -1 && thirdComma != -1 && fourthComma != -1) {
-    										// Extraire les valeurs
-     vitesse = command.substring(0, firstComma).toInt(); 			// Vitesse
-     angle = command.substring(firstComma + 1, secondComma).toInt(); 		// Angle
-     si_obstacle = command.substring(secondComma + 1, thirdComma).toInt(); 	// Si obstacle
-     si_actif = command.substring(thirdComma + 1, fourthComma).toInt(); 	// Si actif
-     si_sonner = command.substring(fourthComma + 1).toInt(); 			// Si sonner
+                        // Extraire les valeurs
+     vitesse = command.substring(0, firstComma).toInt();      // Vitesse
+     angle = command.substring(firstComma + 1, secondComma).toInt();    // Angle
+     si_obstacle = command.substring(secondComma + 1, thirdComma).toInt();  // Si obstacle
+     si_actif = command.substring(thirdComma + 1, fourthComma).toInt();   // Si actif
+     si_sonner = command.substring(fourthComma + 1).toInt();      // Si sonner
 
-    										// Utiliser les valeurs dans votre logique
+                        // Utiliser les valeurs dans votre logique
     afficher(vitesse, angle, si_obstacle, si_actif, si_sonner);
   } else {
-    										// Gérer les erreurs si le format de la commande est invalide
+                        // Gérer les erreurs si le format de la commande est invalide
     Serial.println("Erreur : commande invalide !");
   }
 }
 
-										// Exemple de fonction move qui utilise les 5 valeurs
+                    // Exemple de fonction move qui utilise les 5 valeurs
 void afficher(int vitesse, int angle, int si_obstacle, int si_actif, int si_sonner) {
-  										// Ajoutez ici votre logique de mouvement
+                      // Ajoutez ici votre logique de mouvement
   Serial.print("Vitesse : ");
   Serial.println(vitesse);
   Serial.print("Angle : ");
@@ -76,12 +77,12 @@ void afficher(int vitesse, int angle, int si_obstacle, int si_actif, int si_sonn
 }
 
 void sonner(){
-	//logique pour sonner
-	digitalWrite(buzzer,HIGH);
+  //logique pour sonner
+  digitalWrite(buzzer,HIGH);
 }
 void stop_sonner(){
-	//logique pour arreter de  sonner
-	digitalWrite(buzzer,LOW);
+  //logique pour arreter de  sonner
+  digitalWrite(buzzer,LOW);
 }
 
 void stopMotors() {
@@ -129,121 +130,104 @@ void scan_initial(){
     si_scanner = 1;
 }
 
+void turnLeft(){
+        motorFrontLeft.run(FORWARD);
+        motorFrontRight.run(BACKWARD);
+        motorBackLeft.run(FORWARD);
+        motorBackRight.run(BACKWARD);
+        delay(100);
+}
+
+void turnRight(){
+        motorFrontLeft.run(BACKWARD);
+        motorFrontRight.run(FORWARD);
+        motorBackLeft.run(FORWARD);
+        motorBackRight.run(BACKWARD);
+        delay(100);
+}
+
 void eviterObstacle(){
-	// logique pour eviter un obstacle
+  // logique pour eviter un obstacle
       int dodge_speed = 250;
-      int scan_delay = 100;
+      int dodge_delay = 50;
       int compteur = 0;
-      int dodge_strategy = 0;
+
       
       motorFrontLeft.setSpeed(dodge_speed);
       motorFrontRight.setSpeed(dodge_speed);
       motorBackLeft.setSpeed(dodge_speed);
       motorBackRight.setSpeed(dodge_speed);
-
+        Serial.println("on esquive ");
       while(true){
           if(si_obstacle){ 
-                if(dodge_strategy){
+                if(dodge_strategy == 0){
+                          Serial.println("a gauche ");
                       motorFrontLeft.run(FORWARD);
                       motorFrontRight.run(BACKWARD);
                       motorBackLeft.run(BACKWARD);
                       motorBackRight.run(FORWARD);
                 }else{
+                          Serial.println("a droite ");
                       motorFrontLeft.run(BACKWARD);
                       motorFrontRight.run(FORWARD);
                       motorBackLeft.run(FORWARD);
                       motorBackRight.run(BACKWARD);
                 }
-                delay(100);
-                compteur++ ;
-  
-                if ( compteur >= 0 && compteur <= 10){
-                    dodge_strategy = 0;
-                }
-                if ( compteur >= 11 && compteur <= 40){
-                    dodge_strategy = 1;
-                }
-                if ( compteur >= 41 && compteur <= 90){
-                    dodge_strategy = 0;
-                }
-                if ( compteur >= 91 && compteur <= 160){
-                    dodge_strategy = 1;
-                }
-//          String receivedString = Serial.readStringUntil('\n');
-//          parseCommand(receivedString);
-          getDistance();
-              if (distance > 20){
+              getDistance();
+              if (distance > 10){
                   si_obstacle = 0;
               }
           }
+          dodge_strategy = !dodge_strategy;
+          rouler();
           return;
       }
       
 }
 
 void getDistance() {
-  digitalWrite(trigPin, LOW);
-  digitalWrite(trigPin, LOW);
-  delayMicroseconds(2);
-  digitalWrite(trigPin, HIGH);
-  delayMicroseconds(10);
-  digitalWrite(trigPin, LOW);
-
-  // Calculer la durée du signal réfléchi
-  long duration = pulseIn(echoPin, HIGH);
-
-  // Convertir la durée en distance (en cm)
-  long distance_f = duration * 0.034 / 2;
-  distance = distance_f;
-  //return distance;
-}
-void sendDistance() {
-  Serial.print("Distance:");
-  Serial.println(distance);
-}
-
-// Fonction utilitaire pour régler la vitesse d’un moteur
-void setMotorSpeed(AF_DCMotor &motor, float speed) {
-  if (speed > 0) {
-    motor.setSpeed(speed * maxSpeed);
-    motor.run(FORWARD);
-  } else if (speed < 0) {
-    motor.setSpeed(-speed * maxSpeed);
-    motor.run(BACKWARD);
-  } else {
-    motor.run(RELEASE);
-  }
-}
-
-
-void rouler(int vitesse, int angle) {
-  // Conversion de l'angle en radians
-  float rad = angle * PI / 180.0;
-
-  // Calcul des vitesses pour chaque moteur
-  float frontLeftSpeed = sin(rad) + cos(rad);   // Avant gauche
-  float frontRightSpeed = sin(rad) - cos(rad);  // Avant droit
-  float backLeftSpeed = sin(rad) - cos(rad);    // Arrière gauche
-  float backRightSpeed = sin(rad) + cos(rad);   // Arrière droit
-
-  // Mise à l'échelle des vitesses pour respecter la plage [-255, 255]
-  float maxMagnitude = max(max(abs(frontLeftSpeed), abs(frontRightSpeed)),
-                           max(abs(backLeftSpeed), abs(backRightSpeed)));
-  if (maxMagnitude > 1.0) {
-    frontLeftSpeed /= maxMagnitude;
-    frontRightSpeed /= maxMagnitude;
-    backLeftSpeed /= maxMagnitude;
-    backRightSpeed /= maxMagnitude;
-  }
-
-  // Application des vitesses aux moteurs
-  setMotorSpeed(motorFrontLeft, frontLeftSpeed);
-  setMotorSpeed(motorFrontRight, frontRightSpeed);
-  setMotorSpeed(motorBackLeft, backLeftSpeed);
-  setMotorSpeed(motorBackRight, backRightSpeed);
+    digitalWrite(trigPin, LOW);
+    digitalWrite(trigPin, LOW);
+    delayMicroseconds(2);
+    digitalWrite(trigPin, HIGH);
+    delayMicroseconds(10);
+    digitalWrite(trigPin, LOW);
   
-  getDistance();
-  sendDistance();
+    // Calculer la durée du signal réfléchi
+    long duration = pulseIn(echoPin, HIGH);
+  
+    // Convertir la durée en distance (en cm)
+    long distance_f = duration * 0.034 / 2;
+    distance = distance_f;
+    //return distance;
+}
+
+void sendDistance() {
+    Serial.print("Distance:");
+    Serial.println(distance);
+}
+
+void rouler(){
+          String receivedString = Serial.readStringUntil('\n');
+          parseCommand(receivedString);
+
+          while( angle > 95 || angle < 85 ) {
+              if(angle > 95){
+                  turnLeft();
+              }     
+              if(angle < 5){
+                  turnRight();
+              }    
+          }
+        
+          motorFrontLeft.setSpeed(maxSpeed);
+          motorFrontRight.setSpeed(maxSpeed);
+          motorBackLeft.setSpeed(maxSpeed);
+          motorBackRight.setSpeed(maxSpeed);
+          motorFrontLeft.run(FORWARD);
+          motorFrontRight.run(FORWARD);
+          motorBackLeft.run(FORWARD);
+          motorBackRight.run(FORWARD); 
 }
 
 
@@ -257,48 +241,6 @@ void finish(){
 }
 
 void loop() {
-//    digitalWrite(led, HIGH);
-//    motorFrontLeft.setSpeed(255);
-//    motorFrontLeft.run(FORWARD);
-//    delay(3000);
-//
-//    motorFrontLeft.setSpeed(50);
-//    delay(3000);
-//    
-//    digitalWrite(led, LOW);
-//    motorFrontLeft.run(FORWARD);
-//    motorFrontLeft.setSpeed(50);
-//    motorFrontLeft.run(FORWARD);
-//    delay(3000);
-
-    motorFrontLeft.setSpeed(maxSpeed);
-    motorFrontRight.setSpeed(maxSpeed);
-    motorBackLeft.setSpeed(maxSpeed);
-    motorBackRight.setSpeed(maxSpeed);
-
-    motorFrontLeft.run(FORWARD);
-    motorFrontRight.run(FORWARD);
-    motorBackLeft.run(FORWARD);
-    motorBackRight.run(FORWARD);
-    getDistance();
-    sendDistance();
-    
-    if (distance < 20){
-        stopTotal();
-        si_obstacle = 1;
-        Serial.print("arreter les moteurs ");
-        if(si_obstacle){
-        Serial.print("eviter l'obstacle ");
-          eviterObstacle();
-        }
-        if(! si_obstacle){
-        Serial.print(" c'est terminer ");
-          finish();
-      }
-    }
-
-    
-                    // If there is data in the serial buffer
     if (Serial.available() > 0) {
                   Serial.print("la serial available");
                             // Read the entire line from serial
@@ -317,9 +259,9 @@ void loop() {
                   Serial.print("si c'est actif ");
             if(! si_scanner){
                   Serial.print(" ca doit scanner ");
-                scan_initial();
+                  scan_initial();
             }
-            rouler(vitesse,angle);
+            rouler();
                   Serial.print(" ca roule ");
             if (distance < 10){
                 stopTotal();

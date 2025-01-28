@@ -7,7 +7,7 @@ from client import Client  # Assurez-vous que la classe Client est correctement 
 from arduino import ArduinoCommunication
 
 class Core:
-    def __init__(self, image=None, target_name=None, server_address="localhost", port="12345", arduino_port="/dev/ttyACM0", arduino_baudrate=9600):
+    def __init__(self, image=None, target_name=None, server_address="localhost", port="12345", arduino_port="/dev/ttyUSB2", arduino_baudrate=9600):
         """
         Initialise le tracker d'objets.
 
