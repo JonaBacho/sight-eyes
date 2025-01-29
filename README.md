@@ -1,13 +1,14 @@
 
 # Projet d'Électronique et d'Interfaçage : `SIGHT EYES`
 
-![Bannière du projet](media/images/banner.jpeg)  
+![Bannière du projet](media/images/sigh-eyes.jpeg)  
 *Maquette du projet*  
 
+<!-- 
 <a href="media/videos/mouvements_chassis.mp4">
   <img src="media/images/click_to_see_demo2.webp" alt="Démonstration Vidéo" width="150" height="150">
 </a>
-<p><em>Cliquez sur l'image pour voir la vidéo de démonstration</em></p>
+<p><em>Cliquez sur l'image pour voir la vidéo de démonstration</em></p> -->
 
 
 ---
