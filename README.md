@@ -181,4 +181,7 @@ Ce projet est sous licence MIT. Cela signifie que vous êtes libre d'utiliser, m
  
 📄 **Lien vers le fichier de licence :** [Licence](./LICENSE)  
 
+ 
+📄 **Lien vers le fichier de licence :** [Licence](./LICENSE)  
+https://docs.google.com/document/d/1f8tUvwfSryX23fXpkzcJhEFco83-RClL7QG0bTTjWdU/edit?tab=t.umc8ccw7exuy
 ---
