@@ -82,6 +82,17 @@
             <mxPoint x="430" y="385" as="targetPoint" />
           </mxGeometry>
         </mxCell>
+        <mxCell id="SH3TEGv6jWpeI2iRywyq-29" value="" style="rounded=1;whiteSpace=wrap;html=1;dashed=1;" vertex="1" parent="1">
+          <mxGeometry x="40" y="470" width="210" height="140" as="geometry" />
+        </mxCell>
+        <mxCell id="SH3TEGv6jWpeI2iRywyq-30" value="&lt;p style=&quot;margin:0px;margin-top:6px;text-align:center;&quot;&gt;&lt;b&gt;Esp32-cam stream server&lt;/b&gt;&lt;/p&gt;&lt;hr size=&quot;1&quot; style=&quot;border-style:solid;&quot;&gt;&lt;p style=&quot;margin:0px;margin-left:8px;&quot;&gt;+ ip_address: String&lt;br&gt;+ port: int&lt;span style=&quot;background-color: transparent; color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));&quot;&gt;&amp;nbsp;&lt;/span&gt;&lt;/p&gt;" style="align=left;overflow=fill;html=1;dropTarget=0;whiteSpace=wrap;" vertex="1" parent="1">
+          <mxGeometry x="55" y="500" width="180" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="SH3TEGv6jWpeI2iRywyq-31" value="" style="shape=component;jettyWidth=8;jettyHeight=4;" vertex="1" parent="SH3TEGv6jWpeI2iRywyq-30">
+          <mxGeometry x="1" width="20" height="20" relative="1" as="geometry">
+            <mxPoint x="-24" y="4" as="offset" />
+          </mxGeometry>
+        </mxCell>
       </root>
     </mxGraphModel>
   </diagram>
