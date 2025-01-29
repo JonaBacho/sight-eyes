@@ -112,12 +112,12 @@ Le projet est structuré comme suit :
 
 ### Déploiement et Utilisation
 
-**Prérequis matériels
-**Raspberry Pi
-**ESP32 cam
-**Kit k Eyes studio
-**Kit Arduino
-**Capteurs Ultrasong
+- **Prérequis matériels
+- **Raspberry Pi
+- **ESP32 cam
+- **Kit k Eyes studio
+- **Kit Arduino
+- **Capteurs Ultrasong
 
 Installation du logiciel
 1-Clonez le Dépôt
