@@ -111,8 +111,30 @@ Le projet est structuré comme suit :
 
 
 ### Déploiement et Utilisation
-Cette section n'est pas encore disponible, elle le sera une fois le projet terminé
 
+- **Prérequis matériels**
+- **Raspberry Pi**
+- **ESP32 cam**
+- **Kit k Eyes studio**
+- **Kit Arduino**
+- **Capteurs Ultrasong**
+
+Installation du logiciel
+- **1-Clonez le Dépôt**
+- **2-cd /Module_analyse_image**
+- **3-pip install -r requirements.txt**
+- **4-python3 train_model.py**
+- **5-python3 object_detection_app.py**
+
+
+Configuration Arduino
+
+- 1-cd /Module_chassis
+- 2-televerser le code arduino_final.ino
+- 3-Python3 comm_raspberry.py
+
+Telegram
+- 1-se connecter au bot telegram [lien](https://t.me/SightEyebot)
 ---
 
 ### Problèmes Connus et Résolution
@@ -159,4 +181,7 @@ Ce projet est sous licence MIT. Cela signifie que vous êtes libre d'utiliser, m
  
 📄 **Lien vers le fichier de licence :** [Licence](./LICENSE)  
 
+ 
+📄 **Lien vers le fichier de licence :** [Licence](./LICENSE)  
+https://docs.google.com/document/d/1f8tUvwfSryX23fXpkzcJhEFco83-RClL7QG0bTTjWdU/edit?tab=t.umc8ccw7exuy
 ---
