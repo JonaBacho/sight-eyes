@@ -112,26 +112,26 @@ Le projet est structuré comme suit :
 
 ### Déploiement et Utilisation
 
-- **Prérequis matériels
-- **Raspberry Pi
-- **ESP32 cam
-- **Kit k Eyes studio
-- **Kit Arduino
-- **Capteurs Ultrasong
+- **Prérequis matériels**
+- **Raspberry Pi**
+- **ESP32 cam**
+- **Kit k Eyes studio**
+- **Kit Arduino**
+- **Capteurs Ultrasong**
 
 Installation du logiciel
-1-Clonez le Dépôt
-2-cd /Module_analyse_image
-3-pip install -r requirements.txt
-4- python3 train_model.py
-5- python3 object_detection_app.py
+- **1-Clonez le Dépôt**
+- **2-cd /Module_analyse_image**
+- **3-pip install -r requirements.txt**
+- **4-python3 train_model.py**
+- **5-python3 object_detection_app.py**
 
 
 Configuration Arduino
 
-1-cd /Module_chassis
-2-televerser le code arduino_final.ino
-3-Python3 comm_raspberry.py
+- 1-cd /Module_chassis
+- 2-televerser le code arduino_final.ino
+- 3-Python3 comm_raspberry.py
 
 Telegram
 1-se connecter au bot telegram
