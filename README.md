@@ -135,15 +135,15 @@ Ce projet a été possible grâce à la collaboration et aux efforts de nombreus
 
 ### Etudiants
 
-- **NDJOUNKENG ELEONOR** ([eleonor2004](https://github.com/eleonor2004)) : Développement de l'interface utilisateur.  
-- **NGAH NDONGO ESTELLE** ([estelleNdongo](https://github.com/estelleNdongo)) : Conception du châssis et intégration des capteurs.  
-- **FOMEKONG JONATHAN BACHELARD** ([JonaBacho](https://github.com/JonaBacho)) : Développement de l'algorithme d'analyse d'image.  
-- **NOMO GABRIEL JUNIOR** ([NOMO-Gabriel](https://github.com/NOMO-Gabriel)) : Documentation et gestion de projet.  
-- **ATABONG EFON STEPHANE** ([atabong45](https://github.com/atabong45)) : Développement de l'interface utilisateur.  
+- **NDJOUNKENG ELEONOR** ([eleonor2004](https://github.com/eleonor2004)) :Chef de projet et Développement du module d'analyse d'images.  
+- **NGAH NDONGO ESTELLE** ([estelleNdongo](https://github.com/estelleNdongo)) : sous chef du projet et Développement du module d'analyse d'images
+- **FOMEKONG JONATHAN BACHELARD** ([JonaBacho](https://github.com/JonaBacho)) : Développement du module d'analyse d'image.  
+- **NOMO GABRIEL JUNIOR** ([NOMO-Gabriel](https://github.com/NOMO-Gabriel)) : Conception du châssis et intégration des capteurs.  
+- **ATABONG EFON STEPHANE** ([atabong45](https://github.com/atabong45)) : Conception du châssis et intégration des capteurs.  
 - **NGO BASSOM ANNE ROSALIE** ([Ngo-Bassom-Anne-Rosa](https://github.com/Ngo-Bassom-Anne-Rosa)) : Conception du châssis et intégration des capteurs.  
 - **MBOCK JEAN DANIEL** ([jedanmbock](https://github.com/jedanmbock)) : Développement de l'algorithme d'analyse d'image.  
-- **NGOUPAYE THIERRY** ([ThierryNgoupaye](https://github.com/ThierryNgoupaye)) : Documentation et gestion de projet.  
-- **NGHOGHE  Franck** ([ShiningFra](https://github.com/[ShiningFra)) : Développement de l'interface utilisateur.  
+- **NGOUPAYE THIERRY** ([ThierryNgoupaye](https://github.com/ThierryNgoupaye)) : Conception du châssis et intégration des capteurs.  
+- **NGHOGHE  Franck** ([ShiningFra](https://github.com/ShiningFra)) : Développement de l'interface utilisateur et du mmbot telegra.  
 - **WANDJI EMMANUEL** ([leg234](https://github.com/leg234)) : Conception du châssis et intégration des capteurs.  
  
 
