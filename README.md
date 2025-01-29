@@ -134,7 +134,7 @@ Configuration Arduino
 - 3-Python3 comm_raspberry.py
 
 Telegram
-1-se connecter au bot telegram
+- 1-se connecter au bot telegram [lien](https://t.me/SightEyebot)
 ---
 
 ### Problèmes Connus et Résolution
